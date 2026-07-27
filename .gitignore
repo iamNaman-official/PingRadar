@@ -1,0 +1,45 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+/media
+/staticfiles
+
+# Environment variables / secrets
+.env
+.env.local
+
+# Django migrations (optional — many teams keep these committed; uncomment if you want to exclude them)
+# migrations/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Testing / coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Jupyter (if you experiment in notebooks)
+.ipynb_checkpoints
