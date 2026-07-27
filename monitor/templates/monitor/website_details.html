@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PingRadar — {{ website.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        base: '#0A0D12',
+                        panel: '#12161D',
+                        border: '#232935',
+                        ink: '#E6E9EF',
+                        muted: '#7C8798',
+                        up: '#34D399',
+                        down: '#F87171',
+                        brand: '#38BDF8',
+                    },
+                    fontFamily: {
+                        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+        .pulse-dot::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 9999px;
+            background: currentColor;
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(2.4); opacity: 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .pulse-dot::before { animation: none; }
+        }
+    </style>
+</head>
+<body class="bg-base text-ink min-h-screen">
+
+    <header class="border-b border-border">
+        <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <svg viewBox="0 0 56 56" class="w-7 h-7">
+                    <circle cx="28" cy="28" r="26" fill="none" stroke="#232935" stroke-width="2"/>
+                    <circle cx="28" cy="28" r="17" fill="none" stroke="#232935" stroke-width="2"/>
+                    <circle cx="28" cy="28" r="2.5" fill="#38BDF8"/>
+                </svg>
+                <span class="font-semibold tracking-tight">PingRadar</span>
+            </div>
+            <form method="post" action="{% url 'logout' %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="text-muted text-sm hover:text-ink transition bg-transparent border-none cursor-pointer p-0">
+                    Log out
+                </button>
+            </form>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6 py-8">
+        <a href="{% url 'dashboard' %}" class="text-muted text-sm hover:text-ink transition inline-block mb-6">← Back to dashboard</a>
+
+        <!-- Header block -->
+        {% with latest=website.latest_check %}
+        <div class="flex items-start justify-between mb-8">
+            <div class="flex items-center gap-3">
+                <div class="relative w-3 h-3 shrink-0
+                    {% if latest.is_up %}text-up{% elif latest %}text-down{% else %}text-muted{% endif %}">
+                    {% if latest.is_up %}<div class="pulse-dot absolute inset-0"></div>{% endif %}
+                    <div class="relative w-3 h-3 rounded-full bg-current"></div>
+                </div>
+                <div>
+                    <h1 class="text-xl font-semibold tracking-tight">{{ website.name }}</h1>
+                    <p class="text-muted text-sm mono">{{ website.url }}</p>
+                </div>
+            </div>
+            <span class="text-xs font-semibold uppercase tracking-wide px-3 py-1.5 rounded-full
+                {% if latest.is_up %}bg-up/10 text-up{% elif latest %}bg-down/10 text-down{% else %}bg-muted/10 text-muted{% endif %}">
+                {% if latest.is_up %}Operational{% elif latest %}Down{% else %}Pending first check{% endif %}
+            </span>
+        </div>
+        {% endwith %}
+
+        <!-- Stat cards -->
+        <div class="grid grid-cols-3 gap-3 mb-8">
+            <div class="bg-panel border border-border rounded-lg px-5 py-4">
+                <p class="text-muted text-xs uppercase tracking-wide mb-1.5">Uptime</p>
+                <p class="mono text-2xl font-medium text-ink">{% if uptime is not None %}{{ uptime }}%{% else %}—{% endif %}</p>
+            </div>
+            <div class="bg-panel border border-border rounded-lg px-5 py-4">
+                <p class="text-muted text-xs uppercase tracking-wide mb-1.5">Last response</p>
+                <p class="mono text-2xl font-medium text-ink">
+                    {% if website.latest_check.response_time_ms %}{{ website.latest_check.response_time_ms }}<span class="text-sm text-muted">ms</span>{% else %}—{% endif %}
+                </p>
+            </div>
+            <div class="bg-panel border border-border rounded-lg px-5 py-4">
+                <p class="text-muted text-xs uppercase tracking-wide mb-1.5">Checks logged</p>
+                <p class="mono text-2xl font-medium text-ink">{{ recent_checks|length }}</p>
+            </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="bg-panel border border-border rounded-lg p-5 mb-8">
+            <p class="text-sm font-medium text-ink mb-4">Response time</p>
+            {% if recent_checks %}
+                <canvas id="responseTimeChart" height="80"></canvas>
+            {% else %}
+                <p class="text-muted text-sm py-10 text-center">No checks recorded yet — data will appear once monitoring starts.</p>
+            {% endif %}
+        </div>
+
+        <!-- History table -->
+        <div class="bg-panel border border-border rounded-lg overflow-hidden">
+            <div class="px-5 py-4 border-b border-border">
+                <p class="text-sm font-medium text-ink">Recent checks</p>
+            </div>
+            {% if recent_checks %}
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-left text-muted text-xs uppercase tracking-wide">
+                        <th class="px-5 py-2.5 font-medium">Time</th>
+                        <th class="px-5 py-2.5 font-medium">Status</th>
+                        <th class="px-5 py-2.5 font-medium">Response</th>
+                        <th class="px-5 py-2.5 font-medium">HTTP code</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for check in recent_checks %}
+                    <tr class="border-t border-border">
+                        <td class="px-5 py-2.5 mono text-muted">{{ check.timestamp|date:"H:i:s" }}</td>
+                        <td class="px-5 py-2.5">
+                            <span class="font-semibold text-xs uppercase tracking-wide {% if check.is_up %}text-up{% else %}text-down{% endif %}">
+                                {% if check.is_up %}Up{% else %}Down{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-5 py-2.5 mono text-ink">{{ check.response_time_ms|default:"—" }}{% if check.response_time_ms %}ms{% endif %}</td>
+                        <td class="px-5 py-2.5 mono text-muted">{{ check.status_code|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted text-sm px-5 py-8 text-center">Nothing logged yet.</p>
+            {% endif %}
+        </div>
+    </main>
+
+    {% if recent_checks %}
+    <script>
+        const chartData = JSON.parse('{{ chart_data|escapejs }}');
+        new Chart(document.getElementById('responseTimeChart'), {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: 'Response time (ms)',
+                    data: chartData.response_times,
+                    borderColor: '#38BDF8',
+                    backgroundColor: 'rgba(56, 189, 248, 0.08)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 2,
+                    pointBackgroundColor: '#38BDF8',
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#7C8798', font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: '#232935' } },
+                    y: { ticks: { color: '#7C8798', font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: '#232935' } },
+                }
+            }
+        });
+    </script>
+    {% endif %}
+
+</body>
+</html>
