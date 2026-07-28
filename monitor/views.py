@@ -34,6 +34,7 @@ def add_website(request):
         url = request.POST.get('url')
         if name and url:
             Website.objects.create(owner=request.user, name=name, url=url)
+            return redirect('dashboard')
     return render(request, 'monitor/add_website.html')
 
 @login_required
@@ -51,7 +52,7 @@ def website_detail(request, website_id):
         'website': website,
         'status_checks': status_checks,
         'uptime_percentage': website.uptime_percentage(),
-        'latest_status': website.latest_status(),
+        'latest_status': website.latest_check(),
         'response_time_history': json.dumps(website.response_time_history()),
     }
     return render(request, 'monitor/website_details.html', context)

@@ -14,11 +14,11 @@ class Website(models.Model):
     def uptime_percentage(self):
         total_checks = self.checks.count()
         if total_checks == 0:
-            return 0
+            return None
         up_checks = self.checks.filter(is_up=True).count()
         return (up_checks / total_checks) * 100
 
-    def latest_status(self):
+    def latest_check(self):
         return self.checks.first()
 
     def response_time_history(self, limit=20):
@@ -39,5 +39,5 @@ class StatusCheck(models.Model):
     class Meta:
         ordering = ['-timestamp']
 
-        def __str__(self):
-            return f"{self.website.name} - {'UP' if self.is_up else 'DOWN'} at {self.timestamp}"
+    def __str__(self):
+        return f"{self.website.name} - {'UP' if self.is_up else 'DOWN'} at {self.timestamp}"
