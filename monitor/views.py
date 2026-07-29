@@ -6,6 +6,8 @@ from monitor.models import Website, StatusCheck
 import json
 
 # Create your views here.
+def landing(request):
+    return render(request, 'monitor/landing.html')
 
 def signup(request):
     if request.method == 'POST':
@@ -47,9 +49,11 @@ def delete_website(request, website_id):
 def website_detail(request, website_id):
     website = get_object_or_404(Website, id=website_id, owner=request.user)
     recent_checks = website.checks.all()[:20]
+    total_checks = website.checks.count()
     context = {
         'website': website,
         'recent_checks': recent_checks,
+        'total_checks': total_checks,
         'uptime': website.uptime_percentage(),
         'chart_data': json.dumps(website.response_time_history()),
     }

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PingRadar — Know the moment something breaks</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        base: '#0A0D12',
+                        panel: '#12161D',
+                        border: '#232935',
+                        ink: '#E6E9EF',
+                        muted: '#7C8798',
+                        up: '#34D399',
+                        down: '#F87171',
+                        brand: '#38BDF8',
+                    },
+                    fontFamily: {
+                        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+        .radar-sweep {
+            animation: sweep-rotate 4s linear infinite;
+            transform-origin: 50% 50%;
+        }
+        @keyframes sweep-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .blip {
+            animation: blip-pulse 3s ease-in-out infinite;
+        }
+        .blip-delay-1 { animation-delay: 0.6s; }
+        .blip-delay-2 { animation-delay: 1.4s; }
+        .blip-delay-3 { animation-delay: 2.1s; }
+        .blip-delay-4 { animation-delay: 0.2s; }
+        @keyframes blip-pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        .blip-down {
+            animation: blip-alert 1.8s ease-in-out infinite;
+        }
+        @keyframes blip-alert {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.25; }
+        }
+
+        .ring-fade {
+            animation: ring-expand 4s ease-out infinite;
+        }
+        @keyframes ring-expand {
+            0% { opacity: 0.5; transform: scale(0.3); }
+            100% { opacity: 0; transform: scale(1); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .radar-sweep, .blip, .blip-down, .ring-fade { animation: none !important; }
+        }
+
+        .fade-up {
+            animation: fade-up 0.7s ease-out backwards;
+        }
+        @keyframes fade-up {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .fade-up { animation: none; opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-base text-ink">
+
+    <header class="border-b border-border">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <svg viewBox="0 0 56 56" class="w-7 h-7">
+                    <circle cx="28" cy="28" r="26" fill="none" stroke="#232935" stroke-width="2"/>
+                    <circle cx="28" cy="28" r="17" fill="none" stroke="#232935" stroke-width="2"/>
+                    <circle cx="28" cy="28" r="2.5" fill="#38BDF8"/>
+                </svg>
+                <span class="font-semibold tracking-tight text-lg">PingRadar</span>
+            </div>
+            <nav class="flex items-center gap-6">
+                <a href="{% url 'login' %}" class="text-muted text-sm hover:text-ink transition hidden sm:block">Log in</a>
+                <a href="{% url 'signup' %}"
+                    class="bg-brand text-base font-semibold text-sm rounded-md px-4 py-2 hover:bg-brand/90 transition">
+                    Get started
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="max-w-6xl mx-auto px-6 pt-16 pb-20 md:pt-24 md:pb-28 grid md:grid-cols-2 gap-12 items-center">
+        <div class="fade-up" style="animation-delay: 0.05s">
+            <div class="inline-flex items-center gap-2 mono text-xs text-brand bg-brand/10 border border-brand/20 rounded-full px-3 py-1 mb-6">
+                <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>
+                Scanning every 60 seconds
+            </div>
+            <h1 class="text-4xl md:text-5xl font-semibold tracking-tight leading-tight mb-5">
+                Know the moment<br>something breaks.
+            </h1>
+            <p class="text-muted text-lg leading-relaxed mb-8 max-w-md">
+                PingRadar watches your sites continuously in the background and
+                checks them all at once — not one at a time — so a slow sweep
+                never becomes a blind spot.
+            </p>
+            <div class="flex flex-wrap items-center gap-4 mb-10">
+                <a href="{% url 'signup' %}"
+                    class="bg-brand text-base font-semibold rounded-md px-5 py-3 hover:bg-brand/90 transition">
+                    Start monitoring — free
+                </a>
+                <a href="{% url 'login' %}"
+                    class="text-ink font-medium text-sm border border-border rounded-md px-5 py-3 hover:border-muted transition">
+                    Log in
+                </a>
+            </div>
+            <p class="mono text-xs text-muted">
+                <span class="text-up">9.5x</span> faster checks using concurrent async I/O, not sequential polling
+            </p>
+        </div>
+
+        <div class="relative flex items-center justify-center fade-up" style="animation-delay: 0.15s">
+            <svg viewBox="0 0 400 400" class="w-full max-w-md">
+                <circle cx="200" cy="200" r="170" fill="none" stroke="#232935" stroke-width="1"/>
+                <circle cx="200" cy="200" r="120" fill="none" stroke="#232935" stroke-width="1"/>
+                <circle cx="200" cy="200" r="70" fill="none" stroke="#232935" stroke-width="1"/>
+                <circle cx="200" cy="200" r="20" fill="none" stroke="#232935" stroke-width="1"/>
+
+                <circle class="ring-fade" cx="200" cy="200" r="170" fill="none" stroke="#38BDF8" stroke-width="1.5"/>
+
+                <g class="radar-sweep">
+                    <path d="M200 200 L200 30 A170 170 0 0 1 347 115 Z" fill="#38BDF8" opacity="0.12"/>
+                    <line x1="200" y1="200" x2="200" y2="30" stroke="#38BDF8" stroke-width="1.5" opacity="0.6"/>
+                </g>
+
+                <circle class="blip" cx="270" cy="130" r="3.5" fill="#34D399"/>
+                <circle class="blip blip-delay-1" cx="130" cy="150" r="3.5" fill="#34D399"/>
+                <circle class="blip blip-delay-2" cx="300" cy="260" r="3.5" fill="#34D399"/>
+                <circle class="blip blip-delay-3" cx="150" cy="290" r="3.5" fill="#34D399"/>
+                <circle class="blip-down blip-delay-4" cx="230" cy="290" r="4" fill="#F87171"/>
+
+                <circle cx="200" cy="200" r="4" fill="#38BDF8"/>
+            </svg>
+
+            <div class="absolute mono text-xs text-down bg-panel border border-down/30 rounded px-2 py-1"
+                style="left: 62%; top: 71%;">
+                api.example.com — DOWN
+            </div>
+        </div>
+    </section>
+
+    <section class="border-t border-border">
+        <div class="max-w-6xl mx-auto px-6 py-20">
+            <h2 class="text-2xl font-semibold tracking-tight mb-2">How a check cycle works</h2>
+            <p class="text-muted mb-12 max-w-lg">Three steps, repeating on a schedule, entirely in the background.</p>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-panel border border-border rounded-lg p-6">
+                    <div class="mono text-xs text-brand mb-3">01 — SCAN</div>
+                    <h3 class="font-medium text-ink mb-2">Every site, at once</h3>
+                    <p class="text-muted text-sm leading-relaxed">
+                        All tracked URLs are checked concurrently, not one after
+                        another — so the total time is bounded by the slowest
+                        single response, not the sum of all of them.
+                    </p>
+                </div>
+                <div class="bg-panel border border-border rounded-lg p-6">
+                    <div class="mono text-xs text-brand mb-3">02 — DETECT</div>
+                    <h3 class="font-medium text-ink mb-2">Real status, not noise</h3>
+                    <p class="text-muted text-sm leading-relaxed">
+                        Response time, status code, and up/down are logged every
+                        cycle. Rate-limited responses are recognized and skipped,
+                        instead of logged as a false outage.
+                    </p>
+                </div>
+                <div class="bg-panel border border-border rounded-lg p-6">
+                    <div class="mono text-xs text-brand mb-3">03 — RECORD</div>
+                    <h3 class="font-medium text-ink mb-2">History that adds up</h3>
+                    <p class="text-muted text-sm leading-relaxed">
+                        Every check is its own row — uptime percentage and the
+                        response time chart are just queries over that history,
+                        not a separately maintained number.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="border-t border-border">
+        <div class="max-w-6xl mx-auto px-6 py-20">
+            <div class="flex items-center gap-2 mb-2">
+                <h2 class="text-2xl font-semibold tracking-tight">What's next</h2>
+                <span class="mono text-xs text-brand bg-brand/10 border border-brand/20 rounded-full px-2.5 py-0.5">
+                    ROADMAP
+                </span>
+            </div>
+            <p class="text-muted mb-12 max-w-lg">Still on the radar — coming in future updates.</p>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-panel border border-border border-dashed rounded-lg p-6 opacity-80">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="mono text-xs text-muted">LIVE PUSH</span>
+                        <span class="mono text-[10px] text-muted bg-border/50 rounded px-2 py-0.5">SOON</span>
+                    </div>
+                    <h3 class="font-medium text-ink mb-2">Instant dashboard updates</h3>
+                    <p class="text-muted text-sm leading-relaxed">
+                        Status changes pushed straight to your screen over a live
+                        connection — no refresh needed to see a site go down.
+                    </p>
+                </div>
+                <div class="bg-panel border border-border border-dashed rounded-lg p-6 opacity-80">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="mono text-xs text-muted">ALERTS</span>
+                        <span class="mono text-[10px] text-muted bg-border/50 rounded px-2 py-0.5">SOON</span>
+                    </div>
+                    <h3 class="font-medium text-ink mb-2">Email &amp; webhook alerts</h3>
+                    <p class="text-muted text-sm leading-relaxed">
+                        Get notified the moment a tracked site goes down —
+                        not just when you happen to check the dashboard.
+                    </p>
+                </div>
+                <div class="bg-panel border border-border border-dashed rounded-lg p-6 opacity-80">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="mono text-xs text-muted">HEALTH CHECKS</span>
+                        <span class="mono text-[10px] text-muted bg-border/50 rounded px-2 py-0.5">SOON</span>
+                    </div>
+                    <h3 class="font-medium text-ink mb-2">Custom checks beyond status codes</h3>
+                    <p class="text-muted text-sm leading-relaxed">
+                        Verify a specific field in a JSON response, not just
+                        whether the server answered at all.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="border-t border-border">
+        <div class="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2 text-muted text-sm">
+                <svg viewBox="0 0 56 56" class="w-5 h-5">
+                    <circle cx="28" cy="28" r="26" fill="none" stroke="#232935" stroke-width="2"/>
+                    <circle cx="28" cy="28" r="2.5" fill="#38BDF8"/>
+                </svg>
+                PingRadar — built with Django &amp; asyncio
+            </div>
+            <a href="{% url 'signup' %}" class="text-brand text-sm hover:underline">Get started →</a>
+        </div>
+    </footer>
+
+</body>
+</html>
