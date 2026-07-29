@@ -108,7 +108,7 @@
             </div>
             <div class="bg-panel border border-border rounded-lg px-5 py-4">
                 <p class="text-muted text-xs uppercase tracking-wide mb-1.5">Checks logged</p>
-                <p class="mono text-2xl font-medium text-ink">{{ recent_checks|length }}</p>
+                <p class="mono text-2xl font-medium text-ink">{{ total_checks }}</p>
             </div>
         </div>
 
@@ -124,8 +124,11 @@
 
         <!-- History table -->
         <div class="bg-panel border border-border rounded-lg overflow-hidden">
-            <div class="px-5 py-4 border-b border-border">
+            <div class="px-5 py-4 border-b border-border flex items-center justify-between">
                 <p class="text-sm font-medium text-ink">Recent checks</p>
+                {% if total_checks > 20 %}
+                    <p class="text-muted text-xs">Showing last 20 of {{ total_checks }}</p>
+                {% endif %}
             </div>
             {% if recent_checks %}
             <table class="w-full text-sm">
