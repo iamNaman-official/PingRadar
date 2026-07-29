@@ -46,12 +46,11 @@ def delete_website(request, website_id):
 @login_required
 def website_detail(request, website_id):
     website = get_object_or_404(Website, id=website_id, owner=request.user)
-    status_checks = StatusCheck.objects.filter(website=website)
+    recent_checks = website.checks.all()[:20]
     context = {
         'website': website,
-        'status_checks': status_checks,
-        'uptime_percentage': website.uptime_percentage(),
-        'latest_status': website.latest_check(),
-        'response_time_history': json.dumps(website.response_time_history()),
+        'recent_checks': recent_checks,
+        'uptime': website.uptime_percentage(),
+        'chart_data': json.dumps(website.response_time_history()),
     }
     return render(request, 'monitor/website_details.html', context)
