@@ -111,12 +111,15 @@
                         </p>
                         <p class="text-muted text-xs">uptime</p>
                     </div>
-                    <div class="text-right w-14">
+                    <div class="text-right w-16">
                         {% if latest %}
                             <span class="text-xs font-semibold uppercase tracking-wide
                                 {% if latest.is_up %}text-up{% else %}text-down{% endif %}">
                                 {% if latest.is_up %}Up{% else %}Down{% endif %}
                             </span>
+                            {% if latest.status_code %}
+                                <p class="text-muted text-xs mono mt-0.5">{{ latest.status_code }}</p>
+                            {% endif %}
                         {% else %}
                             <span class="text-xs font-semibold uppercase tracking-wide text-muted">Pending</span>
                         {% endif %}
