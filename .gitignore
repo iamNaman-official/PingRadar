@@ -42,4 +42,4 @@ htmlcov/
 .pytest_cache/
 
 # Jupyter (if you experiment in notebooks)
-.ipynb_checkpoints
+.ipynb_checkpoints__pycache__/
