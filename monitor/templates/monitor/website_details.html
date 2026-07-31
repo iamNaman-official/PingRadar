@@ -98,7 +98,7 @@
         <div class="grid grid-cols-3 gap-3 mb-8">
             <div class="bg-panel border border-border rounded-lg px-5 py-4">
                 <p class="text-muted text-xs uppercase tracking-wide mb-1.5">Uptime</p>
-                <p class="mono text-2xl font-medium text-ink">{% if uptime is not None %}{{ uptime }}%{% else %}—{% endif %}</p>
+                <p class="mono text-2xl font-medium text-ink">{% if uptime is not None %}{{ uptime | floatformat:2 }}%{% else %}—{% endif %}</p>
             </div>
             <div class="bg-panel border border-border rounded-lg px-5 py-4">
                 <p class="text-muted text-xs uppercase tracking-wide mb-1.5">Last response</p>
