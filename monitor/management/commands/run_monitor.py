@@ -24,7 +24,7 @@ class Command(BaseCommand):
             await asyncio.sleep(60)
 
     async def get_all_websites(self):
-        websites = await sync_to_async(list)(Website.objects.all())
+        websites = await sync_to_async(list)(Website.objects.filter(is_paused=False))
         return websites
 
     async def check_and_save_all(self, websites):

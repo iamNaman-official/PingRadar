@@ -46,6 +46,14 @@ def delete_website(request, website_id):
     return redirect('dashboard')
 
 @login_required
+def toggle_pause(request, website_id):
+    website = get_object_or_404(Website, id=website_id, owner=request.user)
+    if request.method == 'POST':
+        website.is_paused = not website.is_paused
+        website.save()
+    return redirect('dashboard')
+
+@login_required
 def website_detail(request, website_id):
     website = get_object_or_404(Website, id=website_id, owner=request.user)
     recent_checks = website.checks.all()[:20]

@@ -26,11 +26,19 @@
             }
         }
     </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+        }
+
         .pulse-dot::before {
             content: '';
             position: absolute;
@@ -39,112 +47,261 @@
             background: currentColor;
             animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
+
         @keyframes pulse-ring {
-            0% { transform: scale(1); opacity: 0.6; }
-            100% { transform: scale(2.4); opacity: 0; }
+            0% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: scale(2.4);
+                opacity: 0;
+            }
         }
+
         @media (prefers-reduced-motion: reduce) {
-            .pulse-dot::before { animation: none; }
+            .pulse-dot::before {
+                animation: none;
+            }
         }
     </style>
 </head>
+
 <body class="bg-base text-ink min-h-screen">
 
-    <!-- Top bar -->
-    <header class="border-b border-border">
-        <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-                <svg viewBox="0 0 56 56" class="w-7 h-7">
-                    <circle cx="28" cy="28" r="26" fill="none" stroke="#232935" stroke-width="2"/>
-                    <circle cx="28" cy="28" r="17" fill="none" stroke="#232935" stroke-width="2"/>
-                    <circle cx="28" cy="28" r="2.5" fill="#38BDF8"/>
-                </svg>
-                <span class="font-semibold tracking-tight">PingRadar</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <span class="text-muted text-sm">{{ request.user.username }}</span>
-                <form method="post" action="{% url 'logout' %}" class="inline">
-                    {% csrf_token %}
-                    <button type="submit" class="text-muted text-sm hover:text-ink transition bg-transparent border-none cursor-pointer p-0">
-                        Log out
-                    </button>
-                </form>
-            </div>
-        </div>
-    </header>
+<header class="border-b border-border">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
 
-    <main class="max-w-5xl mx-auto px-6 py-8">
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h1 class="text-lg font-semibold tracking-tight">Tracked sites</h1>
-                <p class="text-muted text-sm mt-0.5">{{ websites|length }} site{{ websites|length|pluralize }} being scanned</p>
-            </div>
-            <a href="{% url 'add_website' %}"
-                class="bg-brand text-base font-semibold text-sm rounded-md px-4 py-2 hover:bg-brand/90 transition">
-                + Add site
-            </a>
+        <div class="flex items-center gap-2.5">
+            <svg viewBox="0 0 56 56" class="w-7 h-7">
+                <circle cx="28" cy="28" r="26" fill="none" stroke="#232935" stroke-width="2"/>
+                <circle cx="28" cy="28" r="17" fill="none" stroke="#232935" stroke-width="2"/>
+                <circle cx="28" cy="28" r="2.5" fill="#38BDF8"/>
+            </svg>
+
+            <span class="font-semibold tracking-tight">
+                PingRadar
+            </span>
         </div>
 
-        {% if websites %}
-        <div class="grid gap-3">
-            {% for site in websites %}
-            {% with latest=site.latest_check %}
-            <div class="bg-panel border border-border rounded-lg px-5 py-4 flex items-center justify-between hover:border-brand/40 transition">
-                <a href="{% url 'website_detail' site.id %}" class="flex items-center gap-4 flex-1 min-w-0">
-                    <!-- Status dot -->
-                    <div class="relative w-2.5 h-2.5 shrink-0
-                        {% if latest.is_up %}text-up{% elif latest %}text-down{% else %}text-muted{% endif %}">
-                        {% if latest.is_up %}<div class="pulse-dot absolute inset-0"></div>{% endif %}
-                        <div class="relative w-2.5 h-2.5 rounded-full bg-current"></div>
-                    </div>
+        <div class="flex items-center gap-4">
 
-                    <div class="min-w-0">
-                        <p class="font-medium text-ink truncate">{{ site.name }}</p>
-                        <p class="text-muted text-xs mono truncate">{{ site.url }}</p>
-                    </div>
-                </a>
+            <span class="text-muted text-sm">
+                {{ request.user.username }}
+            </span>
 
-                <div class="flex items-center gap-6 shrink-0">
-                    <div class="text-right">
-                        <p class="mono text-sm text-ink">
-                            {% if site.uptime_percentage %}{{ site.uptime_percentage }}%{% else %}—{% endif %}
-                        </p>
-                        <p class="text-muted text-xs">uptime</p>
-                    </div>
-                    <div class="text-right w-16">
-                        {% if latest %}
-                            <span class="text-xs font-semibold uppercase tracking-wide
-                                {% if latest.is_up %}text-up{% else %}text-down{% endif %}">
-                                {% if latest.is_up %}Up{% else %}Down{% endif %}
-                            </span>
-                            {% if latest.status_code %}
-                                <p class="text-muted text-xs mono mt-0.5">{{ latest.status_code }}</p>
-                            {% endif %}
-                        {% else %}
-                            <span class="text-xs font-semibold uppercase tracking-wide text-muted">Pending</span>
-                        {% endif %}
-                    </div>
-                    <a href="{% url 'delete_website' site.id %}"
-                        onclick="return confirm('Stop tracking {{ site.name }}?');"
-                        class="text-muted hover:text-down transition text-sm">
-                        Delete
-                    </a>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button
+                    type="submit"
+                    class="text-muted text-sm hover:text-ink transition bg-transparent border-none cursor-pointer p-0">
+                    Log out
+                </button>
+            </form>
+
+        </div>
+    </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-6 py-8">
+
+    <div class="flex items-center justify-between mb-6">
+
+        <div>
+            <h1 class="text-lg font-semibold tracking-tight">
+                Tracked sites
+            </h1>
+
+            <p class="text-muted text-sm mt-0.5">
+                {{ websites|length }} tracked site{{ websites|length|pluralize }}
+            </p>
+        </div>
+
+        <a href="{% url 'add_website' %}"
+           class="bg-brand text-base font-semibold text-sm rounded-md px-4 py-2 hover:bg-brand/90 transition">
+            + Add site
+        </a>
+
+    </div>
+
+    {% if websites %}
+
+    <div class="grid gap-3">
+
+        {% for site in websites %}
+        {% with latest=site.latest_check %}
+
+        <div class="bg-panel border border-border rounded-lg px-5 py-4 flex items-center justify-between transition
+            {% if site.is_paused %}
+                opacity-70
+            {% else %}
+                hover:border-brand/40
+            {% endif %}">
+
+            <a href="{% url 'website_detail' site.id %}"
+               class="flex items-center gap-4 flex-1 min-w-0">
+
+                <div class="relative w-2.5 h-2.5 shrink-0
+                    {% if site.is_paused %}
+                        text-yellow-400
+                    {% elif latest.is_up %}
+                        text-up
+                    {% elif latest %}
+                        text-down
+                    {% else %}
+                        text-muted
+                    {% endif %}">
+
+                    {% if latest.is_up and not site.is_paused %}
+                    <div class="pulse-dot absolute inset-0"></div>
+                    {% endif %}
+
+                    <div class="relative w-2.5 h-2.5 rounded-full bg-current"></div>
+
                 </div>
-            </div>
-            {% endwith %}
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="bg-panel border border-dashed border-border rounded-lg py-16 text-center">
-            <p class="text-ink font-medium">Nothing on the radar yet</p>
-            <p class="text-muted text-sm mt-1 mb-5">Add a site to start scanning it for uptime.</p>
-            <a href="{% url 'add_website' %}"
-                class="inline-block bg-brand text-base font-semibold text-sm rounded-md px-4 py-2 hover:bg-brand/90 transition">
-                + Add your first site
+
+                <div class="min-w-0">
+
+                    <p class="font-medium text-ink truncate">
+                        {{ site.name }}
+                    </p>
+
+                    <p class="text-muted text-xs mono truncate">
+                        {{ site.url }}
+                    </p>
+
+                </div>
+
             </a>
+
+            <div class="flex items-center gap-6 shrink-0">
+
+                <div class="text-right">
+
+                    <p class="mono text-sm text-ink">
+                        {% if site.uptime_percentage %}
+                            {{ site.uptime_percentage }}%
+                        {% else %}
+                            —
+                        {% endif %}
+                    </p>
+
+                    <p class="text-muted text-xs">
+                        uptime
+                    </p>
+
+                </div>
+
+                <div class="text-right w-16">
+
+                    {% if site.is_paused %}
+
+                        <span class="text-xs font-semibold uppercase tracking-wide text-yellow-400">
+                            Paused
+                        </span>
+
+                    {% elif latest %}
+
+                        <span class="text-xs font-semibold uppercase tracking-wide
+                            {% if latest.is_up %}
+                                text-up
+                            {% else %}
+                                text-down
+                            {% endif %}">
+
+                            {% if latest.is_up %}
+                                Up
+                            {% else %}
+                                Down
+                            {% endif %}
+
+                        </span>
+
+                        {% if latest.status_code %}
+                        <p class="text-muted text-xs mono mt-0.5">
+                            {{ latest.status_code }}
+                        </p>
+                        {% endif %}
+
+                    {% else %}
+
+                        <span class="text-xs font-semibold uppercase tracking-wide text-muted">
+                            Pending
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+                <div class="flex items-center gap-4">
+
+                    <form method="post" action="{% url 'toggle_pause' site.id %}">
+                        {% csrf_token %}
+                        <button
+                            type="submit"
+                            class="text-sm transition
+                            {% if site.is_paused %}
+                                text-up hover:text-green-300
+                            {% else %}
+                                text-yellow-400 hover:text-yellow-300
+                            {% endif %}">
+                            {% if site.is_paused %}
+                                Resume
+                            {% else %}
+                                Pause
+                            {% endif %}
+                        </button>
+                    </form>
+
+                    <form
+                        method="post"
+                        action="{% url 'delete_website' site.id %}"
+                        onsubmit="return confirm('Stop tracking {{ site.name }}?');">
+
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="text-sm text-muted hover:text-down transition">
+                            Delete
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
         </div>
-        {% endif %}
-    </main>
+
+        {% endwith %}
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="bg-panel border border-dashed border-border rounded-lg py-16 text-center">
+
+        <p class="text-ink font-medium">
+            Nothing on the radar yet
+        </p>
+
+        <p class="text-muted text-sm mt-1 mb-5">
+            Add a site to start scanning it for uptime.
+        </p>
+
+        <a href="{% url 'add_website' %}"
+           class="inline-block bg-brand text-base font-semibold text-sm rounded-md px-4 py-2 hover:bg-brand/90 transition">
+            + Add your first site
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</main>
 
 </body>
 </html>
