@@ -1,45 +1,86 @@
-# Byte-compiled / cache
+# =====================================
+# Python
+# =====================================
+
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Virtual environment
+# =====================================
+# Virtual Environments
+# =====================================
+
 venv/
+.venv/
 env/
 ENV/
-.venv/
 
+# =====================================
+# Environment Variables
+# =====================================
+
+.env
+.env.*
+!.env.example
+
+# =====================================
 # Django
+# =====================================
+
 *.log
-local_settings.py
 db.sqlite3
 db.sqlite3-journal
-/media
-/staticfiles
+local_settings.py
 
-# Environment variables / secrets
-.env
-.env.local
+media/
+staticfiles/
 
-# Django migrations (optional — many teams keep these committed; uncomment if you want to exclude them)
-# migrations/
+# =====================================
+# IDEs
+# =====================================
 
-# IDE / editor
 .vscode/
 .idea/
-*.swp
-*.swo
-.DS_Store
 
-# Distribution / packaging
+# =====================================
+# Operating System
+# =====================================
+
+.DS_Store
+Thumbs.db
+
+# =====================================
+# Packaging
+# =====================================
+
 build/
 dist/
 *.egg-info/
 
-# Testing / coverage
+# =====================================
+# Testing
+# =====================================
+
 .coverage
 htmlcov/
 .pytest_cache/
 
-# Jupyter (if you experiment in notebooks)
-.ipynb_checkpoints__pycache__/
+# =====================================
+# Jupyter
+# =====================================
+
+.ipynb_checkpoints/
+
+# =====================================
+# Type Checkers / Linters (Future)
+# =====================================
+
+.mypy_cache/
+.ruff_cache/
+
+# =====================================
+# Misc
+# =====================================
+
+*.swp
+*.swo
