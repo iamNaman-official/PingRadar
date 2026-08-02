@@ -84,3 +84,4 @@ htmlcov/
 
 *.swp
 *.swo
+.hintrc
