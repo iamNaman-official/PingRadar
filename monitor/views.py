@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
@@ -49,7 +50,11 @@ def add_website(request):
         name = request.POST.get('name')
         url = request.POST.get('url')
         if name and url:
-            Website.objects.create(owner=request.user, name=name, url=url)
+            try:
+                Website.objects.create(owner=request.user, name=name, url=url)
+            except IntegrityError:
+                error_message = "You already have a website with this URL."
+                return render(request, 'monitor/add_website.html', {'error_message': error_message})
             return redirect('dashboard')
     return render(request, 'monitor/add_website.html')
 
