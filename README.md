@@ -2,427 +2,372 @@
 
 # 🚀 PingRadar
 
-**A real-time website uptime monitor built with Django and asyncio.**
+### A real-time website uptime monitoring system built with Django and asyncio
 
-PingRadar continuously monitors websites in the background, records their
-availability and response time, and visualizes uptime history through a
-clean dashboard.
+Monitor websites. Track uptime. Explore backend engineering.
 
-<p>
-  <a href="https://www.python.org/">
-    <img src="https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white" alt="Python">
-  </a>
-  <a href="https://www.djangoproject.com/">
-    <img src="https://img.shields.io/badge/Django-5.x-092E20?logo=django&logoColor=white" alt="Django">
-  </a>
-  <a href="https://docs.python.org/3/library/asyncio.html">
-    <img src="https://img.shields.io/badge/Concurrency-asyncio-blue" alt="asyncio">
-  </a>
-  <a href="LICENSE">
-    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License">
-  </a>
-</p>
+[![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/Django-6.x-092E20?logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![AsyncIO](https://img.shields.io/badge/AsyncIO-Concurrent%20I%2FO-blue)](https://docs.python.org/3/library/asyncio.html)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-*An engineering-focused project exploring asynchronous programming,
-concurrent I/O, and scalable website monitoring.*
+PingRadar is an evolving backend engineering project where I explore Django, database design, asynchronous programming, monitoring systems, and scalable backend architecture.
 
 </div>
 
 ---
 
-# 📖 Table of Contents
+## 📖 About The Project
 
-- [✨ Features](#-features)
-- [💡 Why this exists](#-why-this-exists)
-- [⚡ Performance Benchmark](#-performance-benchmark)
-- [🏗️ Architecture](#️-architecture)
-- [🗄️ Database Design](#️-database-design)
-- [🚨 A Real Edge Case: Rate Limiting](#-a-real-edge-case-rate-limiting)
-- [🧪 Testing](#-testing)
-- [🚀 Installation](#-installation)
-- [📁 Project Structure](#-project-structure)
-- [⚠️ Known Limitations](#️-known-limitations)
-- [🛣️ Roadmap](#️-roadmap)
-- [🤝 Development Note](#-development-note)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
+PingRadar is a website uptime monitoring application built using Django.
 
----
+The goal of this project is not only to create a working monitoring system, but also to understand how backend systems are designed, optimized, tested, and improved over time.
 
-# ✨ Features
+Through PingRadar, I am learning and exploring:
 
-- 🌐 Monitor multiple websites simultaneously
-- ⚡ Concurrent health checks using **asyncio** and **httpx**
-- 📊 Uptime history tracking
-- ⏱️ Response time monitoring
-- 🚦 HTTP status monitoring
-- 👤 User-specific monitoring dashboard
-- 📈 Automatic uptime percentage calculation
-- 🔄 Background monitoring worker
-- 🧪 Automated test suite
-- 📉 Performance benchmark comparing sequential vs concurrent execution
+- Django application architecture
+- Database modeling and relationships
+- Django ORM
+- Async programming using asyncio
+- Concurrent network requests
+- Background workers
+- Testing practices
+- Performance optimization
+
+This project is continuously improving as my understanding of backend engineering grows.
 
 ---
 
-# 💡 Why this exists
+## ✨ Features
 
-If you run a website, API, or side project, you generally don't know it's
-down until someone reports it or you manually check it yourself.
+### 🌐 Website Monitoring
+- Monitor multiple websites
+- Track availability status
+- Store response times
+- Record HTTP status codes
+- Maintain uptime history
 
-Commercial services such as **UptimeRobot**, **Pingdom**, and
-**StatusCake** solve this problem.
+### ⚡ Async Monitoring Worker
+PingRadar uses asynchronous I/O for handling multiple website checks.
 
-PingRadar is a lightweight implementation of the same idea, built to
-explore one engineering question:
+Current approach:
+- `asyncio`
+- `httpx`
+- Django management commands
 
-> **How can many websites be monitored efficiently without the monitoring process itself becoming the bottleneck?**
+### 📊 Dashboard
+The dashboard provides:
+- Tracked websites
+- Website status
+- Uptime percentage
+- Response information
+- Monitoring history
 
-Website monitoring is an **I/O-bound** problem.
-
-Almost all execution time is spent waiting for remote servers to respond
-rather than performing computations locally.
-
-That makes asynchronous programming the ideal solution.
-
-Instead of simply claiming that async is faster, PingRadar demonstrates
-the difference through measurable benchmarks.
+### 🔐 Authentication
+Includes:
+- User registration
+- Login/logout
+- User-specific websites
+- Ownership protection
 
 ---
 
-# ⚡ Performance Benchmark
+## 🏗️ Architecture
 
-`benchmark.py` checks the same **37 websites** using two different
-approaches.
+```mermaid
+flowchart TD
+    A[User Browser] --> B[Django Application]
+    
+    B --> C[Authentication]
+    B --> D[Dashboard]
+    B --> E[Website Management]
+    
+    B --> F[(Database)]
+    
+    G[Monitoring Worker] --> F
+    G --> H[asyncio Event Loop]
+    H --> I[httpx Async Client]
+    I --> J[External Websites]
+    
+    J --> G
+```
 
-| 🚀 Strategy | ⏱️ Total Time |
-|------------|--------------:|
-| Sequential (`requests`) | 20.21 s |
-| Concurrent (`asyncio.gather()`) | 2.12 s |
-| **🏆 Speedup** | **≈ 9.5× Faster** |
+PingRadar currently works as two separate processes:
 
-Sequential monitoring waits for each request to finish before starting
-the next.
+| Process | Responsibility |
+|---------|----------------|
+| **Django Server** | Handles users, dashboard, and website management |
+| **Monitoring Worker** | Performs background health checks |
 
-Concurrent monitoring overlaps waiting time across all requests, making
-the runtime approach the duration of the **slowest request**, rather than
-the sum of every request.
+---
 
-Run the benchmark yourself:
+## 🔄 Monitoring Workflow
 
+```mermaid
+flowchart TD
+    A[Worker Starts] --> B[Fetch Websites]
+    B --> C[Create Async Tasks]
+    C --> D[Send HTTP Requests]
+    D --> E{Response}
+    
+    E -->|Success| F[Save Successful Check]
+    E -->|Failure| G[Save Failed Check]
+    
+    F --> H[StatusCheck Record]
+    G --> H
+    
+    H --> I[Wait Interval]
+    I --> A
+```
+
+---
+
+## 🗄️ Database Design
+
+Current main models:
+
+### Website
+Stores monitored website information:
+- Owner
+- Name
+- URL
+- Created timestamp
+- Pause status
+
+### StatusCheck
+Stores monitoring results:
+- Website relation
+- Timestamp
+- Availability status
+- Response time
+- HTTP status code
+
+Relationship:
+
+```mermaid
+erDiagram
+    USER ||--o{ WEBSITE : owns
+    WEBSITE ||--o{ STATUSCHECK : contains
+```
+
+---
+
+## ⚡ Performance Benchmark
+
+PingRadar includes a benchmark comparing sequential and concurrent monitoring.
+
+Example result:
+
+| Method | Time |
+|--------|------|
+| Sequential requests | 20.21 seconds |
+| Async concurrent requests | 2.12 seconds |
+
+The benchmark demonstrates how asynchronous programming helps with I/O-heavy workloads.
+
+Run benchmark:
 ```bash
 python benchmark.py
 ```
 
 ---
 
-# 🏗️ Architecture
+## 🧪 Testing
 
-```
-                     ┌───────────────────────────────┐
-                     │          Django App           │
-                     │                               │
-                     │ Authentication                │
-                     │ Website Management            │
-                     │ Dashboard                     │
-                     │ Admin                         │
-                     └──────────────┬────────────────┘
-                                    │
-                             Shared Database
-                                    │
-                     ┌──────────────▼────────────────┐
-                     │        run_monitor            │
-                     │                               │
-                     │ asyncio Event Loop            │
-                     │ httpx.AsyncClient             │
-                     │ asyncio.gather()              │
-                     │ Concurrent Health Checks      │
-                     └──────────────┬────────────────┘
-                                    │
-                                    ▼
-                           External Websites
-```
+Current tests cover:
 
-The application runs as **two independent processes** sharing the same
-database.
+### Model Testing
+- Uptime calculation with no checks
+- All websites available
+- All websites unavailable
+- Mixed uptime calculation
 
-| 🖥️ Process | 💻 Command | 🎯 Responsibility |
-|------------|-----------|------------------|
-| Web Server | `python manage.py runserver` | Authentication, Dashboard, Website Management |
-| Monitor Worker | `python manage.py run_monitor` | Continuous Monitoring & Recording Results |
+### Security Testing
+- User ownership validation
+- Unauthorized access prevention
 
-Separating these responsibilities ensures that slow network requests
-never block the responsiveness of the web application.
+### Behaviour Testing
+- Website deletion
+- Correct database behaviour
 
----
-
-# 🗄️ Database Design
-
-## 🌐 Website
-
-Represents a monitored website.
-
-Stores:
-
-- Name
-- URL
-- Owner
-- Creation Timestamp
-
-Provides helper methods:
-
-- `uptime_percentage()`
-- `latest_check()`
-- `response_time_history()`
-
-These values are calculated dynamically instead of storing redundant
-data.
-
----
-
-## 📊 StatusCheck
-
-Represents a **single monitoring event**.
-
-Each row stores:
-
-- Timestamp
-- HTTP Status Code
-- Response Time
-- Success / Failure Status
-
-Historical monitoring data is simply the accumulation of these rows.
-
----
-
-# 🚨 A Real Edge Case: Rate Limiting
-
-During testing, one monitored service (**TryHackMe**) started returning
-
-```
-429 Too Many Requests
-```
-
-Initially, every non-2xx response was treated as downtime.
-
-This created **false outage reports** even though the website itself was
-fully operational.
-
-The monitoring logic was updated so HTTP **429** is treated as a special
-case.
-
-Instead of incorrectly marking the site as either **Up** or **Down**, the
-check is skipped because neither result would accurately reflect the
-website's state.
-
-Future improvements include:
-
-- 📨 Custom User-Agent
-- 🔄 Exponential Backoff
-- 📈 Adaptive Monitoring Intervals
-
----
-
-# 🧪 Testing
-
-Run tests using:
-
+Run tests:
 ```bash
 python manage.py test monitor
 ```
 
-Current test coverage includes:
+---
 
-- ✅ Uptime percentage calculations
-- ✅ Zero-history edge cases
-- ✅ All-up scenarios
-- ✅ All-down scenarios
-- ✅ Mixed uptime calculations
-- ✅ Ownership security
-- ✅ Unauthorized access prevention
-- ✅ Correct deletion behaviour
+## ⚠️ Known Limitations
+
+PingRadar is an active learning project. Some areas are intentionally not production-ready yet.
+
+### Dashboard Query Optimization
+The dashboard currently performs additional database queries while retrieving website status information. At the current project size this works correctly, but it can become inefficient as the number of monitored websites increases.
+
+Future improvement:
+- Django ORM optimization
+- Database annotations
+- Better query planning
+
+I am currently learning these concepts and will improve this part as my understanding of database optimization grows.
+
+### Other Planned Improvements
+- PostgreSQL support
+- Background task queues
+- Live dashboard updates
+- Notification system
 
 ---
 
-# 🚀 Installation
+## 📁 Project Structure
 
-Clone the repository
+<details>
+<summary>Click to expand</summary>
 
+```text
+PingRadar/
+├── monitor/
+│   ├── management/
+│   │   └── commands/
+│   │       └── run_monitor.py
+│   ├── migrations/
+│   ├── static/
+│   ├── templates/
+│   ├── admin.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── pingradar_project/
+│   ├── settings.py
+│   ├── urls.py
+│   ├── asgi.py
+│   └── wsgi.py
+├── benchmark.py
+├── manage.py
+├── requirements.txt
+├── LICENSE
+└── README.md
+```
+
+</details>
+
+---
+
+## 🚀 Installation
+
+Clone repository:
 ```bash
 git clone https://github.com/iamNaman-official/PingRadar.git
 cd PingRadar
 ```
 
-Create a virtual environment
-
-### Windows
-
+Create virtual environment:
 ```bash
 python -m venv venv
+```
 
+Activate environment:
+
+**Windows:**
+```bash
 venv\Scripts\activate
 ```
 
-### Linux / macOS
-
+**Linux/macOS:**
 ```bash
-python3 -m venv venv
-
 source venv/bin/activate
 ```
 
-Install dependencies
-
+Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-Create a `.env` file
-
+Create environment file:
 ```env
 SECRET_KEY=your_secret_key
 DEBUG=True
 ALLOWED_HOSTS=127.0.0.1,localhost
 ```
 
-Apply migrations
-
+Run migrations:
 ```bash
 python manage.py migrate
-python manage.py createsuperuser
 ```
 
-Run the project
-
-Terminal 1
-
+Start server:
 ```bash
 python manage.py runserver
 ```
 
-Terminal 2
-
+Start monitoring worker:
 ```bash
 python manage.py run_monitor
 ```
 
 ---
 
-# 📁 Project Structure
+## 📚 Documentation
 
-```
-PingRadar/
-│
-├── monitor/
-│   ├── management/
-│   │   └── commands/
-│   │       └── run_monitor.py
-│   ├── models.py
-│   ├── views.py
-│   ├── tests.py
-│   ├── urls.py
-│   └── templates/
-│
-├── pingradar_project/
-│   ├── settings.py
-│   └── urls.py
-│
-├── benchmark.py
-├── requirements.txt
-├── manage.py
-├── README.md
-└── .env.example
-```
+Detailed documentation:
+- 🏗️ Architecture → `docs/ARCHITECTURE.md`
+- 🗄️ Database → `docs/DATABASE.md`
+- 🧪 Testing → `docs/TESTING.md`
+- 🧑‍💻 Development Journey → `docs/DEVELOPMENT.md`
+- 🛣️ Roadmap → `docs/ROADMAP.md`
 
 ---
 
-# ⚠️ Known Limitations
+## 📚 Learning Journey
 
-These are intentional engineering decisions rather than oversights.
+PingRadar represents my journey while learning backend engineering.
 
-| Limitation | Reason | Production Solution |
-|------------|--------|---------------------|
-| Single monitoring worker | Multiple workers would duplicate monitoring | Celery + Redis |
-| Refresh-based dashboard | Simpler architecture | Django Channels + Redis |
-| SQLite | Suitable for development | PostgreSQL |
+This project helps me understand:
+- How backend applications are structured
+- How databases store and retrieve information
+- How asynchronous systems work
+- How performance problems appear
+- How software improves through iteration
 
-The project intentionally focuses on asynchronous monitoring instead of
-introducing unnecessary infrastructure.
-
----
-
-# 🛣️ Roadmap
-
-- [ ] 📧 Email Notifications
-- [ ] 💬 Discord Alerts
-- [ ] 📱 Telegram Notifications
-- [ ] 💼 Slack Integration
-- [ ] 🐳 Docker Support
-- [ ] 🐘 PostgreSQL Support
-- [ ] 🔌 REST API
-- [ ] ⚙️ Celery + Redis
-- [ ] 📡 Live Dashboard (WebSockets)
-- [ ] 🔍 Custom Health Checks
-- [ ] 📊 Prometheus Metrics
-- [ ] 📈 Grafana Dashboards
+The goal is not to claim that the project is perfect. The goal is to build, identify problems, understand them, and improve step by step.
 
 ---
 
-# 🤝 Development Note
+## 🤖 AI Usage
 
-PingRadar was built as a backend systems engineering project exploring
-asynchronous I/O, concurrent network programming, and scalable monitoring
-architecture with Django.
+AI tools were used as development assistance for:
+- Exploring ideas
+- Frontend acceleration
+- Debugging support
+- Documentation assistance
 
-The **backend architecture, asynchronous monitoring engine, database
-design, benchmarking, business logic, testing, debugging, and overall
-system design** were designed, implemented, and are actively maintained
-by the author.
-
-The **frontend (HTML, CSS, and JavaScript)** was developed with AI
-assistance to accelerate interface development.
-
-Every AI-generated component was reviewed, modified, integrated, and
-adapted to fit the overall architecture of the project.
-
-AI was used as a development assistant rather than a replacement for
-engineering decisions.
+All architecture decisions, backend implementation, testing, and project direction are reviewed and maintained by me.
 
 ---
 
-# 🤝 Contributing
+## 🛣️ Roadmap
 
-Contributions are welcome.
-
-```bash
-git checkout -b feature/my-feature
-git commit -m "Add my feature"
-git push origin feature/my-feature
-```
-
-Then open a Pull Request.
-
----
-
-# 📄 License
-
-This project is licensed under the **MIT License**.
-
-See the [LICENSE](LICENSE) file for details.
+- [ ] Email notifications
+- [ ] Discord notifications
+- [ ] Telegram notifications
+- [ ] PostgreSQL migration
+- [ ] Docker support
+- [ ] REST API
+- [ ] Celery + Redis
+- [ ] WebSocket dashboard
+- [ ] Prometheus metrics
+- [ ] Grafana dashboards
 
 ---
 
-# 👨‍💻 Author
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 👨‍💻 Author
 
 **Naman**
-
-GitHub: **https://github.com/iamNaman-official**
-
----
-
-<div align="center">
-
-### ⭐ If you found PingRadar useful, consider giving it a star!
-
-It helps others discover the project and motivates future development.
-
-</div>
+- GitHub: [iamNaman-official](https://github.com/iamNaman-official)
