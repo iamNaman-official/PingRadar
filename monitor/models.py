@@ -17,7 +17,7 @@ class Website(models.Model):
         if total_checks == 0:
             return None
         up_checks = self.checks.filter(is_up=True).count()
-        return (up_checks / total_checks) * 100
+        return round(((up_checks / total_checks) * 100), 2)
 
     def latest_check(self):
         return self.checks.first()
@@ -37,13 +37,16 @@ class Website(models.Model):
 
 class StatusCheck(models.Model):
     website = models.ForeignKey(Website, on_delete=models.CASCADE, related_name='checks')
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
     is_up = models.BooleanField()
     response_time_ms = models.IntegerField(null=True, blank=True)
     status_code = models.IntegerField(null=True, blank=True)
 
     class Meta:
         ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['website', '-timestamp']),
+        ]
 
     def __str__(self):
         return f"{self.website.name} - {'UP' if self.is_up else 'DOWN'} at {self.timestamp}"

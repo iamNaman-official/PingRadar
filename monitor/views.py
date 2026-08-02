@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login as auth_login
 from monitor.models import Website, StatusCheck
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 import json
 
 # Create your views here.
@@ -50,6 +52,16 @@ def add_website(request):
         name = request.POST.get('name')
         url = request.POST.get('url')
         if name and url:
+            if not url.startswith(('http://', 'https://')):
+                url = 'https://' + url
+
+            validator = URLValidator()
+            try:
+                validator(url)
+            except ValidationError:
+                error_message = "Please enter a valid URL."
+                return render(request, 'monitor/add_website.html', {'error_message': error_message})
+
             try:
                 Website.objects.create(owner=request.user, name=name, url=url)
             except IntegrityError:
