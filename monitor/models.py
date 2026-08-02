@@ -29,6 +29,11 @@ class Website(models.Model):
             'response_times': [c.response_time_ms for c in checks],
         }
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['owner', 'url'], name='unique_website_per_user')
+    ]
+
 
 class StatusCheck(models.Model):
     website = models.ForeignKey(Website, on_delete=models.CASCADE, related_name='checks')
