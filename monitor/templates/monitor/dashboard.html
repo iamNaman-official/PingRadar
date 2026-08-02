@@ -178,6 +178,8 @@
                 <div class="relative w-2.5 h-2.5 shrink-0
                     {% if site.is_paused %}
                         text-yellow-400
+                    {% elif latest.status_code == 403 %}
+                        text-down
                     {% elif latest.is_up %}
                         text-up
                     {% elif latest %}
@@ -221,6 +223,13 @@
                         <span class="text-xs font-semibold uppercase tracking-wide text-yellow-400">
                             Paused
                         </span>
+                    {% elif latest.status_code == 403 %}
+                        <span class="text-xs font-semibold uppercase tracking-wide text-down">
+                            Forbidden
+                        </span>
+                        <p class="text-muted text-xs mono mt-0.5">
+                            {{ latest.status_code }}
+                        </p>
                     {% elif latest %}
                         <span class="text-xs font-semibold uppercase tracking-wide
                             {% if latest.is_up %}
