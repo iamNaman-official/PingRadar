@@ -24,13 +24,25 @@ import httpx
 
 TIMEOUT = 5
 MAX_CONCURRENT = 10
+BASE_URL = "http://localhost:8080"
 
-URLS = ["http://127.0.0.1:8080/random" for _ in range(50)]  
+ENDPOINTS = [
+    f"{BASE_URL}/",
+    f"{BASE_URL}/slow",
+    f"{BASE_URL}/very-slow",
+    f"{BASE_URL}/error",
+    f"{BASE_URL}/timeout",
+    f"{BASE_URL}/random",
+]
+
+URLS =[]
+
+for endpoint in ENDPOINTS:
+    URLS.extend([endpoint] * 10)
 
 async def warm_up(sync_client: httpx.Client, async_client: httpx.AsyncClient, url: str) -> None:
     """
     Warm up both clients before timing begins.
-
     Using the same client instances for the warm-up and the benchmark
     ensures their underlying connections are already established.
     Warming up a different client would not warm the connections reused
@@ -40,7 +52,6 @@ async def warm_up(sync_client: httpx.Client, async_client: httpx.AsyncClient, ur
         sync_client.get(url)
     except httpx.RequestError:
         pass
-
     try:
         await async_client.get(url)
     except httpx.RequestError:
@@ -55,10 +66,8 @@ async def warm_up(sync_client: httpx.Client, async_client: httpx.AsyncClient, ur
 def check_url_sync(client: httpx.Client, url: str) -> dict:
     """Check a single URL synchronously."""
     start = time.perf_counter()
-
     try:
         response = client.get(url)
-
         return {
             "url": url,
             "status": response.status_code,
@@ -78,18 +87,13 @@ def check_url_sync(client: httpx.Client, url: str) -> dict:
 def check_all_sequential(client: httpx.Client, urls: list[str]) -> tuple[list[dict], float]:
     """Check all URLs sequentially."""
     start = time.perf_counter()
-
     results = [check_url_sync(client, url) for url in urls]
-
     total_time = time.perf_counter() - start
-
     return results, total_time
-
 
 # -----------------------------
 # Concurrent Benchmark
 # -----------------------------
-
 
 async def check_url_async(client: httpx.AsyncClient, url: str, semaphore: asyncio.Semaphore) -> dict:
     """Check a single URL asynchronously, using a semaphore to limit concurrency."""
@@ -97,7 +101,6 @@ async def check_url_async(client: httpx.AsyncClient, url: str, semaphore: asynci
         start = time.perf_counter()
         try:
             response = await client.get(url)
-
             return {
                 "url": url,
                 "status": response.status_code,
@@ -117,19 +120,14 @@ async def check_url_async(client: httpx.AsyncClient, url: str, semaphore: asynci
 async def check_all_concurrent(client: httpx.AsyncClient, urls: list[str]) -> tuple[list[dict], float]:
     """Check all URLs concurrently, using a semaphore to limit concurrency."""
     start = time.perf_counter()
-
     semaphore = asyncio.Semaphore(MAX_CONCURRENT)  
     results = await asyncio.gather(*(check_url_async(client, url, semaphore) for url in urls))
-
     total_time = time.perf_counter() - start
-
     return results, total_time
-
 
 # -----------------------------
 # Utility Functions
 # -----------------------------
-
 
 def print_results(results: list[dict]) -> None:
     """Print the results of the benchmark."""
@@ -146,7 +144,6 @@ def print_results(results: list[dict]) -> None:
 
 def print_summary(sync_time: float, async_time: float) -> None:
     """Print a summary of the benchmark results."""
-
     speedup = sync_time / async_time
 
     print("\n" + "=" * 50)
