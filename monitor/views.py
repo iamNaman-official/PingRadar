@@ -1,12 +1,15 @@
-from django.db import IntegrityError
-from django.shortcuts import redirect, render, get_object_or_404
+import json
+
+from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login as auth_login
-from monitor.models import Website, StatusCheck
-from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
-import json
+from django.core.validators import URLValidator
+from django.db import IntegrityError
+from django.shortcuts import get_object_or_404, redirect, render
+
+from monitor.models import Website
+
 
 # Create your views here.
 def landing(request):

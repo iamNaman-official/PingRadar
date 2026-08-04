@@ -1,9 +1,11 @@
-import time
-import httpx
 import asyncio
+import time
+
+import httpx
 from asgiref.sync import sync_to_async
 from django.core.management.base import BaseCommand
-from monitor.models import Website, StatusCheck
+
+from monitor.models import StatusCheck, Website
 
 
 class Command(BaseCommand):

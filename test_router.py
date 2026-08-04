@@ -3,6 +3,7 @@ import asyncio
 import handlers
 from router import get_handler
 
+
 async def home_route():
     handler = get_handler("/")
     status_code, body = await handler()

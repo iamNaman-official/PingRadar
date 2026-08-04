@@ -1,6 +1,8 @@
 import asyncio
 import random
+
 from router import route
+
 
 @route("/")
 async def home_handler():

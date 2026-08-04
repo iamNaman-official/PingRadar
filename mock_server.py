@@ -1,5 +1,5 @@
 import asyncio
-import handlers
+
 from router import get_handler
 
 HOST = "127.0.0.1"

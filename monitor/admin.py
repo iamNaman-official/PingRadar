@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from monitor.models import Website, StatusCheck
+from monitor.models import StatusCheck, Website
 
 # Register your models here.
 admin.site.register(Website)

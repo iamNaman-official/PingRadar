@@ -17,7 +17,6 @@ import time
 
 import httpx
 
-
 # -----------------------------
 # Configuration
 # -----------------------------
