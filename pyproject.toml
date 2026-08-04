@@ -1,0 +1,41 @@
+[tool.ruff]
+
+# Maximum line length
+line-length = 88
+
+# Files/directories Ruff should ignore
+exclude = [
+    "*/migrations/*",
+    ".venv",
+    "__pycache__",
+]
+
+
+[tool.ruff.lint]
+
+# Rules to enable
+select = [
+    "E",      # pycodestyle errors
+    "F",      # pyflakes (unused imports, variables, etc.)
+    "I",      # import sorting
+]
+
+
+# Rules to ignore
+ignore = [
+    "E501",   # line length handled by formatter
+    "RUF012", # Django class attributes / migrations false positives
+]
+
+
+[tool.ruff.lint.per-file-ignores]
+
+# Decorator registration imports:
+# import handlers executes decorators and registers routes
+"mock_server.py" = [
+    "F401",
+]
+
+"test_router.py" = [
+    "F401",
+]
