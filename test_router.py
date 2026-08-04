@@ -1,14 +1,16 @@
 import asyncio
-from router import add_path, get_handler
+from router import route, get_handler
 
-async def handler():
-    return "Normal response"
+@route("/")
+async def home_handler():
+    return 200, "Welcome to the Home Page"
 
-add_path("/normal", handler)
 async def main():
-    path = "/missing"
-    handler = get_handler(path)
-    response = await handler()
-    print(f"Response for {path}: {response}")
+    paths = ["/", "/missing"]
+    for path in paths:
+        handler = get_handler(path)
+        status, response = await handler()
+        print(f"{path} -> Status: {status}, Response: {response}")
 
 asyncio.run(main())
+

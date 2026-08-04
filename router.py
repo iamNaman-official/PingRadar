@@ -1,7 +1,10 @@
 routes = {}
 
-def add_path(path, handler):
-    routes[path] = handler
+def route(path):
+    def decorator(handler):
+        routes[path] = handler
+        return handler
+    return decorator
 
 def get_handler(path):
     handler = routes.get(path)
@@ -10,4 +13,4 @@ def get_handler(path):
     return handler
 
 async def not_found_handler():
-    return "Route Not Found"
+    return 404, "Route Not Found"
