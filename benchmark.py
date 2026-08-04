@@ -24,52 +24,25 @@ import httpx
 
 TIMEOUT = 5
 MAX_CONCURRENT = 10
+BASE_URL = "http://localhost:8080"
 
-URLS = [
-    "https://pokeapi.co/api/v2/pokemon/charizard",
-    "https://pokeapi.co/api/v2/pokemon/bulbasaur",
-    "https://pokeapi.co/api/v2/pokemon/squirtle",
-    "https://pokeapi.co/api/v2/pokemon/pikachu",
-    "https://pokeapi.co/api/v2/pokemon/sceptile",
-    "https://pokeapi.co/api/v2/pokemon/garchomp",
-    "https://pokeapi.co/api/v2/pokemon/dragonite",
-    "https://pokeapi.co/api/v2/pokemon/tyranitar",
-    "https://pokeapi.co/api/v2/pokemon/gardevoir",
-    "https://pokeapi.co/api/v2/pokemon/absol",
-    "https://pokeapi.co/api/v2/pokemon/latios",
-    "https://pokeapi.co/api/v2/pokemon/latias",
-    "https://pokeapi.co/api/v2/pokemon/kyogre",
-    "https://pokeapi.co/api/v2/pokemon/groudon",
-    "https://pokeapi.co/api/v2/pokemon/reshiram",
-    "https://pokeapi.co/api/v2/pokemon/zekrom",
-    "https://pokeapi.co/api/v2/pokemon/kyurem",
-    "https://pokeapi.co/api/v2/pokemon/xerneas",
-    "https://pokeapi.co/api/v2/pokemon/yveltal",
-    "https://pokeapi.co/api/v2/pokemon/zygarde",
-    "https://pokeapi.co/api/v2/pokemon/necrozma",
-    "https://pokeapi.co/api/v2/pokemon/darkrai",
-    "https://pokeapi.co/api/v2/pokemon/arceus",
-    "https://pokeapi.co/api/v2/pokemon/mewtwo",
-    "https://pokeapi.co/api/v2/pokemon/mew",
-    "https://pokeapi.co/api/v2/pokemon/celebi",
-    "https://pokeapi.co/api/v2/pokemon/jirachi",
-    "https://pokeapi.co/api/v2/pokemon/deoxys",
-    "https://pokeapi.co/api/v2/pokemon/greninja",
-    "https://pokeapi.co/api/v2/pokemon/decidueye",
-    "https://pokeapi.co/api/v2/pokemon/incineroar",
-    "https://pokeapi.co/api/v2/pokemon/primarina",
-    "https://pokeapi.co/api/v2/pokemon/lycanroc",
-    "https://pokeapi.co/api/v2/pokemon/toxtricity",
-    "https://pokeapi.co/api/v2/pokemon/dracovish",
-    "https://pokeapi.co/api/v2/pokemon/arctovish",
-    "https://pokeapi.co/api/v2/pokemon/dragapult",
+ENDPOINTS = [
+    f"{BASE_URL}/",
+    f"{BASE_URL}/slow",
+    f"{BASE_URL}/very-slow",
+    f"{BASE_URL}/error",
+    f"{BASE_URL}/timeout",
+    f"{BASE_URL}/random",
 ]
 
+URLS =[]
+
+for endpoint in ENDPOINTS:
+    URLS.extend([endpoint] * 10)
 
 async def warm_up(sync_client: httpx.Client, async_client: httpx.AsyncClient, url: str) -> None:
     """
     Warm up both clients before timing begins.
-
     Using the same client instances for the warm-up and the benchmark
     ensures their underlying connections are already established.
     Warming up a different client would not warm the connections reused
@@ -79,7 +52,6 @@ async def warm_up(sync_client: httpx.Client, async_client: httpx.AsyncClient, ur
         sync_client.get(url)
     except httpx.RequestError:
         pass
-
     try:
         await async_client.get(url)
     except httpx.RequestError:
@@ -94,10 +66,8 @@ async def warm_up(sync_client: httpx.Client, async_client: httpx.AsyncClient, ur
 def check_url_sync(client: httpx.Client, url: str) -> dict:
     """Check a single URL synchronously."""
     start = time.perf_counter()
-
     try:
         response = client.get(url)
-
         return {
             "url": url,
             "status": response.status_code,
@@ -117,18 +87,13 @@ def check_url_sync(client: httpx.Client, url: str) -> dict:
 def check_all_sequential(client: httpx.Client, urls: list[str]) -> tuple[list[dict], float]:
     """Check all URLs sequentially."""
     start = time.perf_counter()
-
     results = [check_url_sync(client, url) for url in urls]
-
     total_time = time.perf_counter() - start
-
     return results, total_time
-
 
 # -----------------------------
 # Concurrent Benchmark
 # -----------------------------
-
 
 async def check_url_async(client: httpx.AsyncClient, url: str, semaphore: asyncio.Semaphore) -> dict:
     """Check a single URL asynchronously, using a semaphore to limit concurrency."""
@@ -136,7 +101,6 @@ async def check_url_async(client: httpx.AsyncClient, url: str, semaphore: asynci
         start = time.perf_counter()
         try:
             response = await client.get(url)
-
             return {
                 "url": url,
                 "status": response.status_code,
@@ -156,19 +120,14 @@ async def check_url_async(client: httpx.AsyncClient, url: str, semaphore: asynci
 async def check_all_concurrent(client: httpx.AsyncClient, urls: list[str]) -> tuple[list[dict], float]:
     """Check all URLs concurrently, using a semaphore to limit concurrency."""
     start = time.perf_counter()
-
     semaphore = asyncio.Semaphore(MAX_CONCURRENT)  
     results = await asyncio.gather(*(check_url_async(client, url, semaphore) for url in urls))
-
     total_time = time.perf_counter() - start
-
     return results, total_time
-
 
 # -----------------------------
 # Utility Functions
 # -----------------------------
-
 
 def print_results(results: list[dict]) -> None:
     """Print the results of the benchmark."""
@@ -185,7 +144,6 @@ def print_results(results: list[dict]) -> None:
 
 def print_summary(sync_time: float, async_time: float) -> None:
     """Print a summary of the benchmark results."""
-
     speedup = sync_time / async_time
 
     print("\n" + "=" * 50)
