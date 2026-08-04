@@ -25,46 +25,7 @@ import httpx
 TIMEOUT = 5
 MAX_CONCURRENT = 10
 
-URLS = [
-    "https://pokeapi.co/api/v2/pokemon/charizard",
-    "https://pokeapi.co/api/v2/pokemon/bulbasaur",
-    "https://pokeapi.co/api/v2/pokemon/squirtle",
-    "https://pokeapi.co/api/v2/pokemon/pikachu",
-    "https://pokeapi.co/api/v2/pokemon/sceptile",
-    "https://pokeapi.co/api/v2/pokemon/garchomp",
-    "https://pokeapi.co/api/v2/pokemon/dragonite",
-    "https://pokeapi.co/api/v2/pokemon/tyranitar",
-    "https://pokeapi.co/api/v2/pokemon/gardevoir",
-    "https://pokeapi.co/api/v2/pokemon/absol",
-    "https://pokeapi.co/api/v2/pokemon/latios",
-    "https://pokeapi.co/api/v2/pokemon/latias",
-    "https://pokeapi.co/api/v2/pokemon/kyogre",
-    "https://pokeapi.co/api/v2/pokemon/groudon",
-    "https://pokeapi.co/api/v2/pokemon/reshiram",
-    "https://pokeapi.co/api/v2/pokemon/zekrom",
-    "https://pokeapi.co/api/v2/pokemon/kyurem",
-    "https://pokeapi.co/api/v2/pokemon/xerneas",
-    "https://pokeapi.co/api/v2/pokemon/yveltal",
-    "https://pokeapi.co/api/v2/pokemon/zygarde",
-    "https://pokeapi.co/api/v2/pokemon/necrozma",
-    "https://pokeapi.co/api/v2/pokemon/darkrai",
-    "https://pokeapi.co/api/v2/pokemon/arceus",
-    "https://pokeapi.co/api/v2/pokemon/mewtwo",
-    "https://pokeapi.co/api/v2/pokemon/mew",
-    "https://pokeapi.co/api/v2/pokemon/celebi",
-    "https://pokeapi.co/api/v2/pokemon/jirachi",
-    "https://pokeapi.co/api/v2/pokemon/deoxys",
-    "https://pokeapi.co/api/v2/pokemon/greninja",
-    "https://pokeapi.co/api/v2/pokemon/decidueye",
-    "https://pokeapi.co/api/v2/pokemon/incineroar",
-    "https://pokeapi.co/api/v2/pokemon/primarina",
-    "https://pokeapi.co/api/v2/pokemon/lycanroc",
-    "https://pokeapi.co/api/v2/pokemon/toxtricity",
-    "https://pokeapi.co/api/v2/pokemon/dracovish",
-    "https://pokeapi.co/api/v2/pokemon/arctovish",
-    "https://pokeapi.co/api/v2/pokemon/dragapult",
-]
-
+URLS = ["http://127.0.0.1:8080/random" for _ in range(50)]  
 
 async def warm_up(sync_client: httpx.Client, async_client: httpx.AsyncClient, url: str) -> None:
     """
