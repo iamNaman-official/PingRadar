@@ -1,5 +1,6 @@
 import asyncio
-import random
+import handlers
+from router import get_handler
 
 HOST = "127.0.0.1"
 PORT = 8080
@@ -107,97 +108,9 @@ async def handle_connection(reader, writer):
             # Routing
             # -----------------------------
 
-            if path == "/":
-                await asyncio.sleep(random.uniform(0.1, 0.6))
-                await send_response(
-                    writer,
-                    200,
-                    "Hello from PingRadar mock server"
-                )
-
-            elif path == "/slow":
-                print(
-                    "Simulating slow endpoint..."
-                )
-                await asyncio.sleep(3)
-                await send_response(
-                    writer,
-                    200,
-                    "Slow endpoint finished."
-                )
-
-            elif path == "/very-slow":
-                print("Simulating very slow endpoint...")
-                await asyncio.sleep(10)
-                await send_response(
-                    writer,
-                    200,
-                    "Very slow endpoint finished."
-                )
-
-            elif path == "/error":
-                await send_response(
-                    writer,
-                    500,
-                    "Internal Server Error"
-                )
-
-            elif path == "/timeout":
-                print("Simulating timeout...")
-                await asyncio.sleep(20)
-                await send_response(
-                    writer,
-                    408,
-                    "Request Timeout"
-                )
-
-            elif path == "/random":
-                delay = random.uniform(0.1, 2.0)
-                print(f"Random delay: {delay:.2f}s")
-                await asyncio.sleep(delay)
-                outcome = random.random()
-
-                if outcome < 0.10:
-                    await send_response(
-                        writer,
-                        404,
-                        "Not Found"
-                    )
-
-                elif outcome < 0.20:
-                    await send_response(
-                        writer,
-                        500,
-                        "Internal Server Error"
-                    )
-
-                elif outcome < 0.30:
-                    await send_response(
-                        writer,
-                        408,
-                        "Request Timeout"
-                    )
-
-                elif outcome < 0.40:
-                    await send_response(
-                        writer,
-                        400,
-                        "Bad Request"
-                    )
-
-                else:
-                    await send_response(
-                        writer,
-                        200,
-                        "Random Success"
-                    )
-
-            else:
-                await send_response(
-                    writer,
-                    404,
-                    "Route Not Found"
-                )
+            handler = get_handler(path)
+            status, response_body = await handler()
+            await send_response(writer, status, response_body)
 
     except Exception as e:
         print(f"Server Error: {e}")
