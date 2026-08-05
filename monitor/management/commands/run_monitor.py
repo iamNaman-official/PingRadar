@@ -12,8 +12,12 @@ class Command(BaseCommand):
     help = "Continuously checks all tracked websites concurrently and records their status."
 
     def handle(self, *args, **options):
-        asyncio.run(self.monitor_loop())
-
+        self.stdout.write("Starting the monitor loop... Press Ctrl+C to stop.")
+        try:
+            asyncio.run(self.monitor_loop())
+        except KeyboardInterrupt:
+            self.stdout.write("\nMonitor loop stopped.")
+            
     async def monitor_loop(self):
         while True:
             websites = await self.get_all_websites()
