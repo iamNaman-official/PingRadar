@@ -1,5 +1,17 @@
+"""
+Lightweight asyncio mock HTTP server used for benchmarking.
+
+Simulates:
+- normal responses
+- slow responses
+- errors
+- timeout scenarios
+- random failures
+"""
+
 import asyncio
 
+import handlers
 from router import get_handler
 
 HOST = "127.0.0.1"
