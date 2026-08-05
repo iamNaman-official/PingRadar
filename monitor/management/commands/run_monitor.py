@@ -65,19 +65,40 @@ class Command(BaseCommand):
                     "up": None,
                     "time": elapsed,
                     "status": response.status_code,
+                    "error": "Rate Limited (429)",
                 }
 
             return {
                 "up": response.status_code < 400,
                 "time": elapsed,
                 "status": response.status_code,
+                "error": None,
             }
-        except Exception:
+        except httpx.TimeoutException:
             elapsed = time.time() - start
             return {
                 "up": False,
                 "time": elapsed,
                 "status": None,
+                "error": "Timeout",
+            }
+
+        except httpx.ConnectError:
+            elapsed = time.time() - start
+            return {
+                "up": False,
+                "time": elapsed,
+                "status": None,
+                "error": "Connection Error",
+            }
+
+        except httpx.RequestError as e:
+            elapsed = time.time() - start
+            return {
+                "up": False,
+                "time": elapsed,
+                "status": None,
+                "error": str(e),
             }
 
     async def save_check_result(self, website, result):
@@ -93,4 +114,7 @@ class Command(BaseCommand):
             status_code=result["status"],
         )
         status_label = "UP" if result["up"] else "DOWN"
-        self.stdout.write(f"  {website.name}: {status_label} ({result['status']})")
+        if result["error"]:
+            self.stdout.write(f"  {website.name}: {status_label} ({result['error']})")
+        else:
+            self.stdout.write(f"  {website.name}: {status_label} ({result['status']})")
