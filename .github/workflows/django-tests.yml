@@ -12,11 +12,14 @@ on:
 
 jobs:
   test:
-
+    name: Django Test Suite
     runs-on: ubuntu-latest
 
-    steps:
+    env:
+      DJANGO_SECRET_KEY: django-test-secret-key
+      DEBUG: True
 
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
