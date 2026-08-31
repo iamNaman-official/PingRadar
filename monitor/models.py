@@ -12,6 +12,7 @@ class Website(models.Model):
     url = models.URLField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
     is_paused = models.BooleanField(default=False)
+    timer = models.PositiveBigIntegerField(default=60, help_text="Time interval in seconds between checks.")
 
     def __str__(self) -> str:
         return self.name

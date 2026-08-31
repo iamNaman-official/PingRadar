@@ -54,10 +54,16 @@ def add_website(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         url = request.POST.get('url')
-        if name and url:
+        timer = request.POST.get('timer')  or 60
+        if name and url and timer:
             if not url.startswith(('http://', 'https://')):
                 url = 'https://' + url
 
+            if not timer.isdigit() or int(timer) <= 0:
+                error_message = "Timer must be a positive integer."
+                return render(request, 'monitor/add_website.html', {'error_message': error_message})
+            
+            timer = int(timer)
             validator = URLValidator()
             try:
                 validator(url)
@@ -66,7 +72,7 @@ def add_website(request):
                 return render(request, 'monitor/add_website.html', {'error_message': error_message})
 
             try:
-                Website.objects.create(owner=request.user, name=name, url=url)
+                Website.objects.create(owner=request.user, name=name, url=url, timer=timer)
             except IntegrityError:
                 error_message = "You already have a website with this URL."
                 return render(request, 'monitor/add_website.html', {'error_message': error_message})
@@ -86,11 +92,18 @@ def toggle_pause(request, website_id):
     if request.method == 'POST':
         website.is_paused = not website.is_paused
         website.save()
-    return redirect('dashboard')
+    return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
 
 @login_required
 def website_detail(request, website_id):
     website = get_object_or_404(Website, id=website_id, owner=request.user)
+
+    if request.method == 'POST':
+        timer = request.POST.get('timer')
+        if timer and timer.isdigit() and int(timer) > 0:
+            website.timer = int(timer)
+            website.save()
+        return redirect('website_detail', website_id=website.id)
     recent_checks = website.checks.all()[:20]
     total_checks = website.checks.count()
     context = {

@@ -1,99 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PingRadar — Add Site</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        base: '#0A0D12',
-                        panel: '#12161D',
-                        border: '#232935',
-                        ink: '#E6E9EF',
-                        muted: '#7C8798',
-                        brand: '#38BDF8',
-                    }
-                }
-            }
-        }
+        tailwind.config = { theme: { extend: { colors: { base: '#0A0D12', panel: '#12161D', border: '#232935', ink: '#E6E9EF', muted: '#7C8798', brand: '#38BDF8', down: '#F87171' } } } }
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Smooth dynamic slider styling */
+        input[type="range"] {
+            -webkit-appearance: none; appearance: none; height: 6px; border-radius: 999px; outline: none;
+            background: linear-gradient(to right, #38BDF8 var(--progress, 0%), #232935 var(--progress, 0%));
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%;
+            background: #38BDF8; cursor: pointer; border: 3px solid #0A0D12; box-shadow: 0 0 0 1px #38BDF8;
+            transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px; height: 18px; border-radius: 50%; background: #38BDF8; cursor: pointer;
+            border: 3px solid #0A0D12; box-shadow: 0 0 0 1px #38BDF8; transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        input[type="range"]::-moz-range-track { background: transparent; border: none; }
+        input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.3); }
+        input[type="range"]:active::-moz-range-thumb { transform: scale(1.3); }
+    </style>
 </head>
 <body class="bg-base text-ink min-h-screen">
-
+    <!-- Header -->
     <header class="border-b border-border">
         <div class="max-w-5xl mx-auto px-6 py-4 flex items-center gap-2.5">
-            <svg viewBox="0 0 56 56" class="w-7 h-7">
-                <circle cx="28" cy="28" r="26" fill="none" stroke="#232935" stroke-width="2"/>
-                <circle cx="28" cy="28" r="17" fill="none" stroke="#232935" stroke-width="2"/>
-                <circle cx="28" cy="28" r="2.5" fill="#38BDF8"/>
-            </svg>
+            <svg viewBox="0 0 56 56" class="w-7 h-7"><circle cx="28" cy="28" r="26" fill="none" stroke="#232935" stroke-width="2"/><circle cx="28" cy="28" r="17" fill="none" stroke="#232935" stroke-width="2"/><circle cx="28" cy="28" r="2.5" fill="#38BDF8"/></svg>
             <span class="font-semibold tracking-tight">PingRadar</span>
         </div>
     </header>
 
+    <!-- Main Content -->
     <main class="max-w-md mx-auto px-6 py-16">
         <a href="{% url 'dashboard' %}" class="text-muted text-sm hover:text-ink transition inline-block mb-6">← Back</a>
-
         <h1 class="text-lg font-semibold tracking-tight mb-1">Add a site to track</h1>
-        <p class="text-muted text-sm mb-6">PingRadar will start scanning it on the next check cycle.</p>
+        <p class="text-muted text-sm mb-6">PingRadar will monitor this site using your selected check interval.</p>
 
+        <!-- Form Card -->
         <div class="bg-panel border border-border rounded-lg p-6">
-            <form method="post" class="space-y-4">
+            <form method="post" class="space-y-5" id="addWebsiteForm">
                 {% csrf_token %}
                 <div>
-                    <label class="block text-xs font-medium text-muted mb-1.5 uppercase tracking-wide">Name</label>
-                    <input type="text" name="name" required
-                        class="w-full bg-base border border-border rounded-md px-3 py-2 text-sm text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition"
-                        placeholder="My portfolio site">
+                    <label for="name" class="block text-xs font-medium text-muted mb-1.5 uppercase tracking-wide">Name</label>
+                    <input type="text" id="name" name="name" required class="w-full bg-base border border-border rounded-md px-3 py-2 text-sm text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition" placeholder="My portfolio site">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-muted mb-1.5 uppercase tracking-wide">URL</label>
-                    <input type="url" name="url" required
-                        class="w-full bg-base border border-border rounded-md px-3 py-2 text-sm text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition"
-                        placeholder="https://example.com">
+                    <label for="url" class="block text-xs font-medium text-muted mb-1.5 uppercase tracking-wide">URL</label>
+                    <input type="url" id="url" name="url" required class="w-full bg-base border border-border rounded-md px-3 py-2 text-sm text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition" placeholder="https://example.com">
                 </div>
-                <button type="submit"
-                    class="w-full bg-brand text-base font-semibold text-sm rounded-md py-2.5 mt-2 hover:bg-brand/90 transition">
-                    Add site
-                </button>
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label for="timerSlider" class="text-xs font-medium text-muted uppercase tracking-wide">Check Interval</label>
+                        <span id="timerDisplay" class="text-sm font-semibold text-brand">60 seconds</span>
+                    </div>
+                    
+                    <!-- Slider min/max mapped 0-100% with a fine step for buttery smooth dragging -->
+                    <input type="range" id="timerSlider" min="0" max="100" value="0" step="0.01" class="w-full cursor-pointer">
+                    <div class="flex justify-between text-xs text-muted mt-2"><span>5 seconds</span><span>180 minutes</span></div>
+                    
+                    <div class="flex gap-2 mt-4">
+                        <div class="flex-1"><input type="number" id="timerInput" min="5" max="10800" value="60" step="1" class="w-full bg-base border border-border rounded-md px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition"></div>
+                        <div class="w-32">
+                            <select id="timerUnit" class="w-full bg-base border border-border rounded-md px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition">
+                                <option value="seconds">Seconds</option><option value="minutes">Minutes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <input type="hidden" name="timer" id="timerHidden" value="60">
+                    <p id="timerHelp" class="text-xs text-muted mt-2">Choose how often PingRadar should check this website.</p>
+                    <p id="timerError" class="hidden text-xs text-down mt-2"></p>
+                </div>
+                <button type="submit" id="submitButton" class="w-full bg-brand text-base font-semibold text-sm rounded-md py-2.5 mt-2 hover:bg-brand/90 transition">Add site</button>
             </form>
         </div>
     </main>
 
-    <!-- Toast notification -->
+    <!-- Error Toast -->
     {% if error_message %}
-    <div id="toast"
-        class="fixed top-6 right-6 max-w-sm bg-panel border border-down/40 rounded-lg shadow-lg px-4 py-3 flex items-start gap-3 transition-all duration-300 opacity-0 translate-y-[-8px]">
-        <svg class="w-5 h-5 text-down shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-        </svg>
+    <div id="toast" class="fixed top-6 right-6 max-w-sm bg-panel border border-down/40 rounded-lg shadow-lg px-4 py-3 flex items-start gap-3 transition-all duration-300 opacity-0 translate-y-[-8px]">
+        <svg class="w-5 h-5 text-down shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 100 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
         <p class="text-ink text-sm">{{ error_message }}</p>
     </div>
-
     <script>
-        const TOAST_DURATION_MS = 6000; // change this to adjust how long the toast stays visible
-
+        // Handle automated fade-in and removal of the toast notification
         const toast = document.getElementById('toast');
-
-        // Fade in
-        requestAnimationFrame(() => {
-            toast.classList.remove('opacity-0', 'translate-y-[-8px]');
-        });
-
-        // Auto-dismiss after TOAST_DURATION_MS
-        setTimeout(() => {
-            toast.classList.add('opacity-0', 'translate-y-[-8px]');
-            setTimeout(() => toast.remove(), 300); // wait for fade-out transition to finish
-        }, TOAST_DURATION_MS);
+        requestAnimationFrame(() => toast.classList.remove('opacity-0', 'translate-y-[-8px]'));
+        setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-[-8px]'); setTimeout(() => toast.remove(), 300); }, 6000);
     </script>
     {% endif %}
 
+    <!-- Logic Script -->
+    <script>
+        // Element selectors and config bounds
+        const $ = id => document.getElementById(id);
+        const [tSlider, tInput, tUnit, tDisplay, tHidden, tError, form] = ['timerSlider', 'timerInput', 'timerUnit', 'timerDisplay', 'timerHidden', 'timerError', 'addWebsiteForm'].map($);
+        const MIN_SEC = 5, MAX_SEC = 10800;
+
+        // Math converters for a dynamic non-linear slider (gives fine control at small times, ramps up at large times)
+        const sliderToSec = (val) => Math.max(MIN_SEC, Math.min(MAX_SEC, Math.round(MIN_SEC + (MAX_SEC - MIN_SEC) * Math.pow(val / 100, 3))));
+        const secToSlider = (sec) => 100 * Math.cbrt(Math.max(0, sec - MIN_SEC) / (MAX_SEC - MIN_SEC));
+
+        // Format raw seconds into a human-readable text output
+        const formatTime = (s) => s < 60 ? `${s} second${s===1?'':'s'}` : s % 60 === 0 ? `${s/60} minute${s/60===1?'':'s'}` : `${Math.floor(s/60)}m ${s%60}s`;
+        
+        // Update the visual background fill of the slider based on 0-100% positioning
+        const updateTrackFill = (percent) => tSlider.style.setProperty('--progress', `${percent}%`);
+        
+        // Update primary UI text and hidden form field mapping
+        const updateDisplay = (s, percent) => { tDisplay.textContent = formatTime(s); tHidden.value = s; updateTrackFill(percent); };
+        
+        // Sync manual input box value matching current selected unit
+        const updateInput = (s) => tInput.value = tUnit.value === 'minutes' ? Number((s/60).toFixed(2)) : s;
+        
+        // Extract raw seconds dynamically from the manual input box
+        const getSecFromInput = () => { const v = Number(tInput.value); return !Number.isFinite(v) ? null : tUnit.value === 'minutes' ? Math.round(v*60) : Math.round(v); };
+
+        // Validate time boundaries and reveal error alerts dynamically
+        const validateTimer = (s) => {
+            let msg = s === null ? 'Please enter a valid number.' : s < MIN_SEC ? 'Minimum check interval is 5 seconds.' : s > MAX_SEC ? 'Maximum check interval is 180 minutes.' : '';
+            tError.textContent = msg; msg ? tError.classList.remove('hidden') : tError.classList.add('hidden');
+            return !msg;
+        };
+
+        // Handlers syncing states between the slider, input field, and dropdown unit change
+        tSlider.addEventListener('input', function() { const s = sliderToSec(Number(this.value)); updateDisplay(s, this.value); updateInput(s); validateTimer(s); });
+        tInput.addEventListener('input', () => { const s = getSecFromInput(); if(s === null) return validateTimer(null); validateTimer(s); if(s >= MIN_SEC && s <= MAX_SEC) { const percent = secToSlider(s); tSlider.value = percent; updateDisplay(s, percent); }});
+        tUnit.addEventListener('change', () => { const s = Number(tHidden.value); updateInput(s); });
+        form.addEventListener('submit', (e) => { const s = getSecFromInput(); if (!validateTimer(s)) e.preventDefault(); tHidden.value = s; });
+
+        // Initialize UI values exactly to 60 seconds on page load
+        const initSec = 60; const initPercent = secToSlider(initSec);
+        tSlider.value = initPercent; updateDisplay(initSec, initPercent); updateInput(initSec);
+    </script>
 </body>
 </html>
