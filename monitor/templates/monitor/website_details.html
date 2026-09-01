@@ -1,134 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PingRadar — {{ website.name }}</title>
+    <!-- Load Tailwind CSS and custom configuration -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        base: '#0A0D12',
-                        panel: '#12161D',
-                        border: '#232935',
-                        ink: '#E6E9EF',
-                        muted: '#7C8798',
-                        up: '#34D399',
-                        down: '#F87171',
-                        brand: '#38BDF8',
-                    },
-                    fontFamily: {
-                        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
-                    }
-                }
-            }
-        }
+        tailwind.config = { theme: { extend: { colors: { base: '#0A0D12', panel: '#12161D', border: '#232935', ink: '#E6E9EF', muted: '#7C8798', up: '#34D399', down: '#F87171', brand: '#38BDF8' }, fontFamily: { mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'] } } } }
     </script>
+    <!-- Load Fonts and Chart.js -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* Base typography, pulse animation for status, and dynamic slider styling */
         body { font-family: 'Inter', sans-serif; }
         .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
-        .pulse-dot::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 9999px;
-            background: currentColor;
-            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse-ring {
-            0% { transform: scale(1); opacity: 0.6; }
-            100% { transform: scale(2.4); opacity: 0; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .pulse-dot::before { animation: none; }
-        }
+        .pulse-dot::before { content: ''; position: absolute; inset: 0; border-radius: 9999px; background: currentColor; animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.4); opacity: 0; } }
+        @media (prefers-reduced-motion: reduce) { .pulse-dot::before { animation: none; } }
+        input[type="range"] { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 999px; outline: none; background: linear-gradient(to right, #38BDF8 var(--progress, 0%), #232935 var(--progress, 0%)); }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #38BDF8; cursor: pointer; border: 3px solid #0A0D12; box-shadow: 0 0 0 1px #38BDF8; transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1); }
+        input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #38BDF8; cursor: pointer; border: 3px solid #0A0D12; box-shadow: 0 0 0 1px #38BDF8; transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1); }
+        input[type="range"]::-moz-range-track { background: transparent; border: none; }
+        input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.3); }
+        input[type="range"]:active::-moz-range-thumb { transform: scale(1.3); }
     </style>
 </head>
 <body class="bg-base text-ink min-h-screen">
-
+    <!-- Top navigation header with logo and logout action -->
     <header class="border-b border-border">
         <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
             <div class="flex items-center gap-2.5">
-                <svg viewBox="0 0 56 56" class="w-7 h-7">
-                    <circle cx="28" cy="28" r="26" fill="none" stroke="#232935" stroke-width="2"/>
-                    <circle cx="28" cy="28" r="17" fill="none" stroke="#232935" stroke-width="2"/>
-                    <circle cx="28" cy="28" r="2.5" fill="#38BDF8"/>
-                </svg>
+                <svg viewBox="0 0 56 56" class="w-7 h-7"><circle cx="28" cy="28" r="26" fill="none" stroke="#232935" stroke-width="2"/><circle cx="28" cy="28" r="17" fill="none" stroke="#232935" stroke-width="2"/><circle cx="28" cy="28" r="2.5" fill="#38BDF8"/></svg>
                 <span class="font-semibold tracking-tight">PingRadar</span>
             </div>
             <form method="post" action="{% url 'logout' %}" class="inline">
                 {% csrf_token %}
-                <button type="submit" class="text-muted text-sm hover:text-ink transition bg-transparent border-none cursor-pointer p-0">
-                    Log out
-                </button>
+                <button type="submit" class="text-muted text-sm hover:text-ink transition bg-transparent border-none cursor-pointer p-0">Log out</button>
             </form>
         </div>
     </header>
 
+    <!-- Main content container -->
     <main class="max-w-5xl mx-auto px-6 py-8">
         <a href="{% url 'dashboard' %}" class="text-muted text-sm hover:text-ink transition inline-block mb-6">← Back to dashboard</a>
 
         {% with latest=website.latest_check %}
-        <!-- Header block -->
-        <div class="flex items-start justify-between mb-8">
+        <!-- Website status header: Indicator dot, Name, URL, and Status Badge -->
+        <div class="flex items-start justify-between mb-5">
             <div class="flex items-center gap-3">
-                <div class="relative w-3 h-3 shrink-0
-                    {% if website.is_paused %}text-yellow-400{% elif latest.is_up %}text-up{% elif latest %}text-down{% else %}text-muted{% endif %}">
+                <div class="relative w-3 h-3 shrink-0 {% if website.is_paused %}text-yellow-400{% elif latest.is_up %}text-up{% elif latest %}text-down{% else %}text-muted{% endif %}">
                     {% if latest.is_up and not website.is_paused %}<div class="pulse-dot absolute inset-0"></div>{% endif %}
                     <div class="relative w-3 h-3 rounded-full bg-current"></div>
                 </div>
                 <div>
                     <h1 class="text-xl font-semibold tracking-tight">{{ website.name }}</h1>
                     <p class="text-muted text-sm mono">{{ website.url }}</p>
-                    {% if latest %}
-                    <p class="text-muted text-xs mt-1">Last checked {{ latest.timestamp|timesince }} ago</p>
-                    {% endif %}
+                    {% if latest %}<p class="text-muted text-xs mt-1">Last checked {{ latest.timestamp|timesince }} ago</p>{% endif %}
                 </div>
             </div>
-            <span class="text-xs font-semibold uppercase tracking-wide px-3 py-1.5 rounded-full
-                {% if website.is_paused %}bg-yellow-400/10 text-yellow-400{% elif latest.is_up %}bg-up/10 text-up{% elif latest %}bg-down/10 text-down{% else %}bg-muted/10 text-muted{% endif %}">
+            <span class="text-xs font-semibold uppercase tracking-wide px-3 py-1.5 rounded-full {% if website.is_paused %}bg-yellow-400/10 text-yellow-400{% elif latest.is_up %}bg-up/10 text-up{% elif latest %}bg-down/10 text-down{% else %}bg-muted/10 text-muted{% endif %}">
                 {% if website.is_paused %}Paused{% elif latest.is_up %}Operational{% elif latest %}Down{% else %}Pending first check{% endif %}
             </span>
         </div>
 
-        <!-- Stat cards -->
+        <!-- Action controls: Heroicons for Pause/Resume and Delete -->
+        <div class="flex flex-wrap items-center gap-3 mb-8">
+            <form method="post" action="{% url 'toggle_pause' website.id %}">
+                {% csrf_token %}
+                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-border bg-panel text-sm font-medium text-ink hover:border-brand hover:text-brand transition">
+                    {% if website.is_paused %}
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M6.3 2.84A1.5 1.5 0 0 0 4 4.11v11.78a1.5 1.5 0 0 0 2.3 1.27l9.344-5.891a1.5 1.5 0 0 0 0-2.538L6.3 2.84Z" /></svg>
+                        Resume Monitoring
+                    {% else %}
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M5.75 3a.75.75 0 0 0-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 0 0 .75-.75V3.75A.75.75 0 0 0 7.25 3h-1.5ZM12.75 3a.75.75 0 0 0-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 0 0 .75-.75V3.75a.75.75 0 0 0-.75-.75h-1.5Z" /></svg>
+                        Pause Monitoring
+                    {% endif %}
+                </button>
+            </form>
+            <form method="post" action="{% url 'delete_website' website.id %}" onsubmit="return confirm('Are you sure you want to delete {{ website.name|escapejs }}? This will also remove its monitoring history.');">
+                {% csrf_token %}
+                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-down/30 bg-down/5 text-sm font-medium text-down hover:bg-down/10 hover:border-down/50 transition">
+                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd" /></svg>
+                    Delete Website
+                </button>
+            </form>
+        </div>
+
+        <!-- Metric cards: Uptime, Last Response, Total Checks -->
         <div class="grid grid-cols-3 gap-3 mb-8">
             <div class="bg-panel border border-border rounded-lg px-5 py-4">
                 <p class="text-muted text-xs uppercase tracking-wide mb-1.5">Uptime</p>
-                <p class="mono text-2xl font-medium text-ink">
-                    {% if website.is_paused %}
-                        —
-                    {% elif uptime is not None %}
-                        {{ uptime|floatformat:2 }}%
-                    {% else %}
-                        —
-                    {% endif %}
-                </p>
+                <p class="mono text-2xl font-medium text-ink">{% if website.is_paused %}—{% elif uptime is not None %}{{ uptime|floatformat:2 }}%{% else %}—{% endif %}</p>
             </div>
             <div class="bg-panel border border-border rounded-lg px-5 py-4">
                 <p class="text-muted text-xs uppercase tracking-wide mb-1.5">Last response</p>
-                <p class="mono text-2xl font-medium text-ink">
-                    {% if website.is_paused %}
-                        —
-                    {% elif latest.response_time_ms %}
-                        {{ latest.response_time_ms }}<span class="text-sm text-muted">ms</span>
-                    {% else %}
-                        —
-                    {% endif %}
-                </p>
+                <p class="mono text-2xl font-medium text-ink">{% if website.is_paused %}—{% elif latest.response_time_ms %}{{ latest.response_time_ms }}<span class="text-sm text-muted">ms</span>{% else %}—{% endif %}</p>
             </div>
             <div class="bg-panel border border-border rounded-lg px-5 py-4">
                 <p class="text-muted text-xs uppercase tracking-wide mb-1.5">Checks logged</p>
                 <p class="mono text-2xl font-medium text-ink">{{ total_checks }}</p>
             </div>
         </div>
+        {% endwith %}
 
-        <!-- Chart -->
+        <!-- Edit Check Interval Form block using smooth dynamic slider -->
+        <div class="bg-panel border border-border rounded-lg p-5 mb-8">
+            <p class="text-sm font-medium text-ink mb-4">Edit Check Interval</p>
+            <form method="post" id="editTimerForm">
+                {% csrf_token %}
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label for="timerSlider" class="text-xs font-medium text-muted uppercase tracking-wide">Adjust Time</label>
+                        <span id="timerDisplay" class="text-sm font-semibold text-brand"></span>
+                    </div>
+                    <input type="range" id="timerSlider" min="0" max="100" value="0" step="0.01" class="w-full cursor-pointer">
+                    <div class="flex justify-between text-xs text-muted mt-2"><span>5 seconds</span><span>180 minutes</span></div>
+                    
+                    <div class="flex gap-2 mt-4">
+                        <div class="flex-1"><input type="number" id="timerInput" min="5" max="10800" step="1" class="w-full bg-base border border-border rounded-md px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition"></div>
+                        <div class="w-32">
+                            <select id="timerUnit" class="w-full bg-base border border-border rounded-md px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition">
+                                <option value="seconds">Seconds</option><option value="minutes">Minutes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <input type="hidden" name="timer" id="timerHidden" value="{{ website.timer }}">
+                    <p id="timerError" class="hidden text-xs text-down mt-2"></p>
+                </div>
+                <button type="submit" class="w-full bg-brand/10 text-brand border border-brand/20 font-semibold text-sm rounded-md py-2 mt-4 hover:bg-brand hover:text-base transition">Save new interval</button>
+            </form>
+        </div>
+
+        <!-- Chart.js canvas container -->
         <div class="bg-panel border border-border rounded-lg p-5 mb-8">
             <p class="text-sm font-medium text-ink mb-4">Response time</p>
             {% if recent_checks %}
@@ -138,75 +143,102 @@
             {% endif %}
         </div>
 
-        <!-- History table -->
+        <!-- Historical logs table displaying recent checks -->
         <div class="bg-panel border border-border rounded-lg overflow-hidden">
             <div class="px-5 py-4 border-b border-border flex items-center justify-between">
                 <p class="text-sm font-medium text-ink">Recent checks</p>
-                {% if total_checks > 20 %}
-                    <p class="text-muted text-xs">Showing last 20 of {{ total_checks }}</p>
-                {% endif %}
+                {% if total_checks > 20 %}<p class="text-muted text-xs">Showing last 20 of {{ total_checks }}</p>{% endif %}
             </div>
             {% if recent_checks %}
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="text-left text-muted text-xs uppercase tracking-wide">
-                        <th class="px-5 py-2.5 font-medium">Time</th>
-                        <th class="px-5 py-2.5 font-medium">Status</th>
-                        <th class="px-5 py-2.5 font-medium">Response</th>
-                        <th class="px-5 py-2.5 font-medium">HTTP code</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for check in recent_checks %}
-                    <tr class="border-t border-border">
-                        <td class="px-5 py-2.5 mono text-muted">{{ check.timestamp|date:"H:i:s" }}</td>
-                        <td class="px-5 py-2.5">
-                            <span class="font-semibold text-xs uppercase tracking-wide {% if check.is_up %}text-up{% else %}text-down{% endif %}">
-                                {% if check.is_up %}Up{% else %}Down{% endif %}
-                            </span>
-                        </td>
-                        <td class="px-5 py-2.5 mono text-ink">{{ check.response_time_ms|default:"—" }}{% if check.response_time_ms %}ms{% endif %}</td>
-                        <td class="px-5 py-2.5 mono text-muted">{{ check.status_code|default:"—" }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-muted text-xs uppercase tracking-wide">
+                            <th class="px-5 py-2.5 font-medium">Time</th>
+                            <th class="px-5 py-2.5 font-medium">Status</th>
+                            <th class="px-5 py-2.5 font-medium">Response</th>
+                            <th class="px-5 py-2.5 font-medium">HTTP code</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for check in recent_checks %}
+                            <tr class="border-t border-border">
+                                <td class="px-5 py-2.5 mono text-muted">{{ check.timestamp|date:"H:i:s" }}</td>
+                                <td class="px-5 py-2.5">
+                                    <span class="font-semibold text-xs uppercase tracking-wide {% if check.is_up %}text-up{% else %}text-down{% endif %}">
+                                        {% if check.is_up %}Up{% else %}Down{% endif %}
+                                    </span>
+                                </td>
+                                <td class="px-5 py-2.5 mono text-ink">{{ check.response_time_ms|default:"—" }} {% if check.response_time_ms %}ms{% endif %}</td>
+                                <td class="px-5 py-2.5 mono text-muted">{{ check.status_code|default:"—" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             {% else %}
-            <p class="text-muted text-sm px-5 py-8 text-center">Nothing logged yet.</p>
+                <p class="text-muted text-sm px-5 py-8 text-center">Nothing logged yet.</p>
             {% endif %}
         </div>
-        {% endwith %}
     </main>
 
-    {% if recent_checks %}
+    <!-- Logic Script: Smooth slider state management and initialization -->
     <script>
-        const chartData = JSON.parse('{{ chart_data|escapejs }}');
-        new Chart(document.getElementById('responseTimeChart'), {
-            type: 'line',
-            data: {
-                labels: chartData.labels,
-                datasets: [{
-                    label: 'Response time (ms)',
-                    data: chartData.response_times,
-                    borderColor: '#38BDF8',
-                    backgroundColor: 'rgba(56, 189, 248, 0.08)',
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: 2,
-                    pointBackgroundColor: '#38BDF8',
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { ticks: { color: '#7C8798', font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: '#232935' } },
-                    y: { ticks: { color: '#7C8798', font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: '#232935' } },
-                }
-            }
-        });
-    </script>
-    {% endif %}
+        const $id = id => document.getElementById(id);
+        const [tSlider, tInput, tUnit, tDisplay, tHidden, tError, form] = ['timerSlider', 'timerInput', 'timerUnit', 'timerDisplay', 'timerHidden', 'timerError', 'editTimerForm'].map($id);
+        const MIN_SEC = 5, MAX_SEC = 10800;
 
+        // Non-linear math functions mapping pixel-perfect slider scale 0-100 to seconds range
+        const sliderToSec = (val) => Math.max(MIN_SEC, Math.min(MAX_SEC, Math.round(MIN_SEC + (MAX_SEC - MIN_SEC) * Math.pow(val / 100, 3))));
+        const secToSlider = (sec) => 100 * Math.cbrt(Math.max(0, sec - MIN_SEC) / (MAX_SEC - MIN_SEC));
+        const formatTime = (s) => s < 60 ? `${s} second${s===1?'':'s'}` : s % 60 === 0 ? `${s/60} minute${s/60===1?'':'s'}` : `${Math.floor(s/60)}m ${s%60}s`;
+        
+        // Updates dynamic UI track visual fill, human readable text display, and hidden form input
+        const updateTrackFill = (percent) => tSlider.style.setProperty('--progress', `${percent}%`);
+        const updateDisplay = (s, percent) => { tDisplay.textContent = formatTime(s); tHidden.value = s; updateTrackFill(percent); };
+        const updateInput = (s) => tInput.value = tUnit.value === 'minutes' ? Number((s/60).toFixed(2)) : s;
+        const getSecFromInput = () => { const v = Number(tInput.value); return !Number.isFinite(v) ? null : tUnit.value === 'minutes' ? Math.round(v*60) : Math.round(v); };
+
+        // Real-time boundary validation
+        const validateTimer = (s) => {
+            let msg = s === null ? 'Please enter a valid number.' : s < MIN_SEC ? 'Minimum interval is 5s.' : s > MAX_SEC ? 'Maximum interval is 180m.' : '';
+            tError.textContent = msg; msg ? tError.classList.remove('hidden') : tError.classList.add('hidden');
+            return !msg;
+        };
+
+        // Event listeners binding UI controls together 
+        tSlider.addEventListener('input', function() { const s = sliderToSec(Number(this.value)); updateDisplay(s, this.value); updateInput(s); validateTimer(s); });
+        tInput.addEventListener('input', () => { const s = getSecFromInput(); if(s === null) return validateTimer(null); validateTimer(s); if(s >= MIN_SEC && s <= MAX_SEC) { const percent = secToSlider(s); tSlider.value = percent; updateDisplay(s, percent); }});
+        tUnit.addEventListener('change', () => { const s = Number(tHidden.value); updateInput(s); });
+        form.addEventListener('submit', (e) => { const s = getSecFromInput(); if (!validateTimer(s)) e.preventDefault(); tHidden.value = s; });
+
+        // Initialize slider visually to match current timer saved in backend database
+        const initSec = parseInt("{{ website.timer|default:60 }}", 10);
+        const initPercent = secToSlider(initSec);
+        tSlider.value = initPercent; 
+        updateDisplay(initSec, initPercent); 
+        tUnit.value = initSec >= 60 && initSec % 60 === 0 ? 'minutes' : 'seconds';
+        updateInput(initSec);
+    </script>
+
+    <!-- Logic Script: Chart.js visualization for response times -->
+    {% if recent_checks %}
+        <script>
+            const chartData = JSON.parse('{{ chart_data|escapejs }}');
+            new Chart(document.getElementById('responseTimeChart'), {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{ label: 'Response time (ms)', data: chartData.response_times, borderColor: '#38BDF8', backgroundColor: 'rgba(56, 189, 248, 0.08)', fill: true, tension: 0.3, pointRadius: 2, pointBackgroundColor: '#38BDF8' }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: '#7C8798', font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: '#232935' } },
+                        y: { ticks: { color: '#7C8798', font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: '#232935' } }
+                    }
+                }
+            });
+        </script>
+    {% endif %}
 </body>
 </html>

@@ -85,3 +85,5 @@ htmlcov/
 *.swp
 *.swo
 .hintrc
+arduino_display.py
+lcd_control.py

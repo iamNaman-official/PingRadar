@@ -289,6 +289,7 @@ class WebsiteViewTestCase(TestCase):
             {
                 "name": "New Website",
                 "url": "newexample.com",
+                "timer": "10",
             }
         )
         self.assertEqual(
@@ -306,6 +307,10 @@ class WebsiteViewTestCase(TestCase):
             website.url,
             "https://newexample.com"
         )
+        self.assertEqual(
+            website.timer,
+            10
+        )
 
     def test_invalid_url_is_rejected(self):
         response = self.client.post(
@@ -313,6 +318,7 @@ class WebsiteViewTestCase(TestCase):
             {
                 "name": "Invalid Website",
                 "url": "not-a-valid-url",
+                "timer": "10",
             }
         )
         self.assertEqual(
@@ -335,6 +341,7 @@ class WebsiteViewTestCase(TestCase):
             {
                 "name": "Duplicate Website",
                 "url": "https://example.com",
+                "timer": "10",
             }
         )
         self.assertEqual(
