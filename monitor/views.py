@@ -100,7 +100,7 @@ def website_detail(request, website_id):
 
     if request.method == 'POST':
         timer = request.POST.get('timer')
-        if timer and timer.isdigit() and int(timer) > 0:
+        if timer and timer.isdigit() and 5 <= int(timer) <= 10800:
             website.timer = int(timer)
             website.save()
         return redirect('website_detail', website_id=website.id)
