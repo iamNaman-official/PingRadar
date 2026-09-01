@@ -63,7 +63,7 @@ class Command(BaseCommand):
 
                     result = await self.check_url_async(client, website.url)
                     await self.save_check_result(website, result)
-                    current_timer = website.timer
+                    current_timer = max(5, int(website.timer or 60))
                     self.stdout.write(f"  {website.name}: Next check in {current_timer}s")
                     await asyncio.sleep(current_timer)
         except asyncio.CancelledError:
