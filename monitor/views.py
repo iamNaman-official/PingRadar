@@ -54,7 +54,7 @@ def add_website(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         url = request.POST.get('url')
-        timer = request.POST.get('timer')  or 60
+        timer = (request.POST.get('timer') or '60').strip()
         if name and url and timer:
             if not url.startswith(('http://', 'https://')):
                 url = 'https://' + url
