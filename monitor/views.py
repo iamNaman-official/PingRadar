@@ -92,7 +92,11 @@ def toggle_pause(request, website_id):
     if request.method == 'POST':
         website.is_paused = not website.is_paused
         website.save()
-    return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+    from django.utils.http import url_has_allowed_host_and_scheme
+    next_url = request.META.get('HTTP_REFERER')
+    if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        return redirect(next_url)
+    return redirect('dashboard')
 
 @login_required
 def website_detail(request, website_id):
